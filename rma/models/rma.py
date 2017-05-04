@@ -97,8 +97,8 @@ class RmaOrder(models.Model):
     def _compute_invoice_refund_count(self):
         invoice_list = []
         for line in self.rma_line_ids:
-            if line.refund_line_id:
-                invoice_list.append(line.refund_line_id.invoice_id.id)
+            for refund in line.refund_line_ids:
+                invoice_list.append(refund.invoice_id.id)
         self.invoice_refund_count = len(list(set(invoice_list)))
 
     @api.one
@@ -224,7 +224,8 @@ class RmaOrder(models.Model):
         result = action.read()[0]
         invoice_list = []
         for line in self.rma_line_ids:
-            invoice_list.append(line.refund_line_id.invoice_id.id)
+            for refund in line.refund_line_ids:
+                invoice_list.append(refund.invoice_id.id)
         invoice_ids = list(set(invoice_list))
         # choose the view_mode accordingly
         if len(invoice_ids) != 1:
@@ -493,18 +494,19 @@ class RmaOrderLine(models.Model):
         self.qty_delivered = qty
 
     @api.one
-    @api.depends('refund_line_id', 'state', 'operation_id', 'type')
+    @api.depends('refund_line_ids', 'state', 'operation_id', 'type')
     def _compute_qty_refunded(self):
         qty = 0.0
         if self.operation_id.refund_type == 'no':
             self.qty_refunded = qty
-        if self.refund_line_id.invoice_id.state != 'cancel':
-            qty += self.refund_line_id.quantity
+        for refund in self.refund_line_ids:
+            if refund.invoice_id.state != 'cancel':
+                qty += refund.quantity
         self.qty_refunded = qty
 
     @api.one
     @api.depends('invoice_line_id', 'state', 'operation_id', 'type',
-                 'refund_line_id')
+                 'refund_line_ids')
     def _compute_qty_to_refund(self):
         qty = 0.0
         if self.operation_id.refund_type == 'no':
@@ -513,9 +515,10 @@ class RmaOrderLine(models.Model):
             qty = self.product_qty
         elif self.operation_id.refund_type == 'received':
             qty = self.qty_received
-        if self.refund_line_id:
-            if self.refund_line_id.invoice_id.state != 'cancel':
-                qty -= self.refund_line_id.quantity
+        if self.refund_line_ids:
+            for refund in self.refund_line_ids:
+                if refund.invoice_id.state != 'cancel':
+                    qty -= refund.quantity
         self.qty_to_refund = qty
 
     @api.one
@@ -587,11 +590,10 @@ class RmaOrderLine(models.Model):
                                       string='Invoice Line',
                                       ondelete='restrict',
                                       index=True)
-    refund_line_id = fields.Many2one('account.invoice.line',
-                                     string='Refund Line',
-                                     ondelete='restrict',
-                                     copy=False,
-                                     index=True, readonly=True)
+    refund_line_ids = fields.One2many(comodel_name='account.invoice.line',
+                                      inverse_name='rma_line_id',
+                                      string='Refund Lines',
+                                      copy=False, index=True, readonly=True)
     invoice_id = fields.Many2one('account.invoice', string='Source',
                                  related='invoice_line_id.invoice_id',
                                  index=True, readonly=True)
@@ -712,18 +714,23 @@ class RmaOrderLine(models.Model):
         result['views'] = [(res and res.id or False, 'form')]
         result['view_id'] = res and res.id or False
         result['res_id'] = self.invoice_line_id.id
-        result['target'] = 'new'
         return result
 
     @api.multi
-    def action_view_refund(self):
+    def action_view_refunds(self):
         action = self.env.ref('account.action_invoice_tree2')
         result = action.read()[0]
-        res = self.env.ref('account.invoice_supplier_form', False)
-        result['views'] = [(res and res.id or False, 'form')]
-        result['res_id'] = self.refund_line_id.id
-        result['view_id'] = res and res.id or False
-        result['target'] = 'new'
+        invoice_ids = []
+        for inv_line in self.refund_line_ids:
+            invoice_ids.append(inv_line.invoice_id.id)
+        # choose the view_mode accordingly
+        if len(invoice_ids) != 1:
+            result['domain'] = "[('id', 'in', " + \
+                               str(invoice_ids) + ")]"
+        elif len(invoice_ids) == 1:
+            res = self.env.ref('account.invoice_supplier_form', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = invoice_ids[0]
         return result
 
     @api.multi
@@ -758,7 +765,7 @@ class RmaOperation(models.Model):
         ('received', 'Based on Received Quantities')],
         string="Shipment Policy", required=True, default='no')
     delivery_type = fields.Selection([
-        ('no', 'Not required'), ('order', 'Based on Ordered Quantities'),
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
         string="Delivery Policy", required=True, default='no')
     route_customer = fields.Many2one(

@@ -49,12 +49,10 @@
         <field name="arch" type="xml">
             <data>
                 <field name="name" position="after">
+                    <field name="rma_line_id"/>
                     <notebook>
                         <page string="RMA Lines">
                             <field name="rma_line_ids"/>
-                        </page>
-                        <page string="Refunded RMA Lines">
-                            <field name="rma_line_refund_ids"/>
                         </page>
                     </notebook>
                 </field>

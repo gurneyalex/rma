@@ -18,8 +18,6 @@ class AccountInvoice(models.Model):
         for invl in self.invoice_line_ids:
             for rmal in invl.rma_line_ids:
                 rma_list.append(rmal.rma_id.id)
-            for rfdl in invl.rma_line_refund_ids:
-                rma_list.append(rfdl.rma_id.id)
         self.rma_count = len(list(set(rma_list)))
 
     rma_count = fields.Integer(compute=_compute_rma_count,
@@ -34,8 +32,6 @@ class AccountInvoice(models.Model):
         for invl in self.invoice_line_ids:
             for rmal in invl.rma_line_ids:
                 rma_list.append(rmal.rma_id.id)
-            for rfdl in invl.rma_line_refund_ids:
-                rma_list.append(rfdl.rma_id.id)
         self.rma_count = len(list(set(rma_list)))
         # choose the view_mode accordingly
         if len(rma_list) != 1:
@@ -76,7 +72,7 @@ class AccountInvoiceLine(models.Model):
         string="RMA", readonly=True,
         help="This will contain the rmas for the invoice line")
 
-    rma_line_refund_ids = fields.One2many(
-        comodel_name='rma.order.line', inverse_name='refund_line_id',
-        string="RMA for refund", readonly=True,
-        help="This will contain the rmas for the refund line")
+    rma_line_id = fields.Many2one(
+        comodel_name='rma.order.line',
+        string="RMA line refund",
+        help="This will contain the rma line that originated the refund line")

@@ -37,14 +37,6 @@
                     <field name="warranty_state"/>
                     <field name="uom_id" groups="product.group_uom"/>
                     <field name="product_qty"/>
-                    <field name="qty_to_receive"/>
-                    <field name="qty_incoming"/>
-                    <field name="qty_to_deliver"/>
-                    <field name="qty_to_refund"/>
-                    <field name="qty_received"/>
-                    <field name="qty_outgoing"/>
-                    <field name="qty_delivered"/>
-                    <field name="qty_refunded"/>
                     <field name="price_unit"/>
                 </tree>
             </field>
@@ -55,7 +47,7 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <form string="Rma Line">
-                    <div class="oe_button_box">
+                    <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_moves"
                                 class="oe_stat_button"
                                 icon="fa-truck">
@@ -67,15 +59,15 @@
                                 icon="fa-pencil-square-o"
                                 string="Invoice">
                         </button>
-                        <button type="object"  name="action_view_refund"
+                        <button type="object"  name="action_view_refunds"
                                 class="oe_stat_button"
                                 icon="fa-pencil-square-o"
-                                string="Refund"
+                                string="Refunds"
                                 groups="account.group_account_user">
                         </button>
                     </div>
                     <group>
-                        <group col="4" string="RMA">
+                        <group name="rma" col="4" string="RMA">
                             <field name="rma_id" readonly="1"/>
                             <field name="origin"/>
                             <field name="state" readonly="1"/>
@@ -95,19 +87,33 @@
                         </group>
                     </group>
                     <group>
-                        <group col="4" string="Quantities">
-                            <field name="qty_to_receive"/>
-                            <field name="qty_incoming"/>
-                            <field name="qty_to_deliver"/>
-                            <field name="qty_to_refund"/>
-                            <field name="qty_received"/>
-                            <field name="qty_outgoing"/>
-                            <field name="qty_delivered"/>
-                            <field name="qty_refunded"/>
+                        <group name="quantities" col="4" string="Quantities">
+                            <group name="receive">
+                                <field name="qty_to_receive"/>
+                                <field name="qty_incoming"/>
+                                <field name="qty_received"/>
+                            </group>
+                            <group name="deliver">
+                                <field name="qty_to_deliver"/>
+                                <field name="qty_outgoing"/>
+                                <field name="qty_delivered"/>
+                            </group>
+                            <group name="refund">
+                                <field name="qty_to_refund"/>
+                                <field name="qty_refunded"/>
+                            </group>
                         </group>
                     </group>
                     <label for="name"/>
                     <field name="name" readonly="1"/>
+                    <notebook>
+                        <page name="stock" string="Stock Moves">
+                            <field name="move_ids" nolabel="1"/>
+                        </page>
+                        <page name="refunds" string="Refunds">
+                            <field name="refund_line_ids" nolabel="1"/>
+                        </page>
+                    </notebook>
                 </form>
             </field>
         </record>
@@ -257,8 +263,6 @@
                                     <field name="invoice_line_id" invisible="True"/>
                                     <field name="sequence" widget="handle"/>
                                     <field name="state" invisible="True"/>
-                                    <field name="refund_line_id"
-                                           invisible="True"/>
                                     <field name="origin"/>
                                     <field name="product_id"/>
                                     <field name="name"/>
@@ -268,14 +272,6 @@
                                     <field name="partner_address_id"/>
                                     <field name="product_qty"/>
                                     <field name="uom_id" groups="product.group_uom"/>
-                                    <field name="qty_to_receive"/>
-                                    <field name="qty_incoming"/>
-                                    <field name="qty_to_deliver"/>
-                                    <field name="qty_to_refund"/>
-                                    <field name="qty_received"/>
-                                    <field name="qty_outgoing"/>
-                                    <field name="qty_delivered"/>
-                                    <field name="qty_refunded"/>
                                     <field name="price_unit"/>
                                 </tree>
                             </field>
@@ -399,8 +395,6 @@
                                     <field name="invoice_line_id" invisible="True"/>
                                     <field name="sequence" widget="handle"/>
                                     <field name="state" invisible="True"/>
-                                    <field name="refund_line_id"
-                                           invisible="True"/>
                                     <field name="origin"/>
                                     <field name="product_id"/>
                                     <field name="name"/>

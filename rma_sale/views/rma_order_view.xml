@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_rma_line_form" model="ir.ui.view">
+            <field name="name">rma.order.line.form</field>
+            <field name="model">rma.order.line</field>
+            <field name="inherit_id" ref="rma.view_rma_line_form"/>
+            <field name="arch" type="xml">
+                <div name='button_box' position="inside">
+                    <button type="object"  name="action_view_sale_order"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            string="Sales Orders"
+                            groups="base.group_sale_salesman">
+                    </button>
+                </div>
+                <group name="quantities" position="inside">
+                    <group>
+                        <field name="qty_to_sell"/>
+                        <field name="qty_sold"/>
+                    </group>
+                </group>
+                <notebook position="inside">
+                    <page name="sale" string="Sale Lines">
+                        <field name="sale_line_ids" nolabel="1"/>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+    </data>
+</odoo>
