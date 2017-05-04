@@ -714,6 +714,7 @@ class RmaOrderLine(models.Model):
         result['views'] = [(res and res.id or False, 'form')]
         result['view_id'] = res and res.id or False
         result['res_id'] = self.invoice_line_id.id
+
         return result
 
     @api.multi

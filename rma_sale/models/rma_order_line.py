@@ -31,6 +31,10 @@ class RmaOrderLine(models.Model):
     def _compute_qty_sold(self):
         self.qty_sold = self._get_rma_sold_qty()
 
+    sale_line_id = fields.Many2one(comodel_name='sale.order.line',
+                                   string='Originating Sales Order Line',
+                                   readonly=True,
+                                   states={'draft': [('readonly', False)]})
     sale_line_ids = fields.One2many('sale.order.line', 'rma_line_id',
                                     string='Sales Order Lines', readonly=True,
                                     states={'draft': [('readonly', False)]},
