@@ -16,6 +16,6 @@ class ProcurementOrder(models.Model):
         res = super(ProcurementOrder, self)._prepare_purchase_order_line(
             po, supplier)
         res.update({
-            'rma_line_id': self.rma_line_id.id
+            'rma_line_ids': [(4,self.rma_line_id.id)]
         })
         return res

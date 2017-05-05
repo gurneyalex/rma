@@ -30,11 +30,11 @@ class RmaOrderLine(models.Model):
                                              string='Origin Purchase Line',
                                              ondelete='set null',
                                              index=True, readonly=True)
-
-    purchase_order_line_ids = fields.One2many(
-        'purchase.order.line', 'rma_line_id',
-        string='Purchase Order Lines', readonly=True,
-        states={'draft': [('readonly', False)]}, copy=False)
+    # It has to be many to many because the po line relates many procurements
+    purchase_order_line_ids = fields.Many2many(
+        'purchase.order.line', 'purchase_line_rma_line_rel',
+        'rma_order_line_id', 'purchase_order_line_id',
+        string='Purchase Order Lines', copy=False)
 
     qty_purchased = fields.Float(
         string='Qty Sold', copy=False,
