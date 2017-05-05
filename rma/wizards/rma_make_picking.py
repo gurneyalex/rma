@@ -20,9 +20,9 @@ class RmaMakePicking(models.TransientModel):
     def _prepare_item(self, line):
         route = None
         if line.type == 'customer':
-            route = line.operation_id.route_customer.id
+            route = line.operation_id.customer_route_id.id
         elif line.type == 'supplier':
-            route = line.operation_id.route_supplier.id
+            route = line.operation_id.supplier_route_id.id
         elif line.type == 'dropship':
             route = line.operation_id.route_dropship.id
         if not route:
@@ -161,7 +161,7 @@ class RmaMakePicking(models.TransientModel):
         return procurement.id
 
     @api.multi
-    def action_create_picking(self):
+    def _create_picking(self):
         """Method called when the user clicks on create picking"""
         picking_type = self.env.context.get('picking_type')
         procurement_list = []
@@ -181,7 +181,33 @@ class RmaMakePicking(models.TransientModel):
             procurement = self._create_procurement(line, picking_type)
             procurement_list.append(procurement)
         procurements = self.env['procurement.order'].browse(procurement_list)
-        action = procurements.do_view_pickings()
+        return procurements
+
+    @api.multi
+    def action_create_picking(self):
+        procurements = self._create_picking()
+        groups = []
+        for proc in procurements:
+            if proc.group_id:
+                groups.append(proc.group_id.id)
+        if len(groups):
+            pickings =self.env['stock.picking'].search(
+                [('group_id','in', groups)])
+            if pickings:
+                action = procurements.do_view_pickings()
+            else:
+                action = self.env.ref(
+                    'procurement.procurement_order_action_exceptions')
+                action = action.read()[0]
+                # choose the view_mode accordingly
+                procurement_ids = procurements.ids
+                if len(procurement_ids) != 1:
+                    action['domain'] = "[('id', 'in', " + \
+                                       str(procurement_ids) + ")]"
+                elif len(procurements) == 1:
+                    res = self.env.ref('procurement.procurement_form_view', False)
+                    action['views'] = [(res and res.id or False, 'form')]
+                    action['res_id'] = procurement_ids[0]
         return action
 
     @api.multi

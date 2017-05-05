@@ -15,3 +15,9 @@ class RmaMakePicking(models.TransientModel):
         res = super(RmaMakePicking, self)._prepare_item(line)
         res['sale_line_id'] = line.sale_line_id.id
         return res
+
+class RmaMakePickingItem(models.TransientModel):
+    _inherit = "rma_make_picking.wizard.item"
+
+    sale_line_id = fields.Many2one('sale.order.line',
+                                    string='Sale Line')

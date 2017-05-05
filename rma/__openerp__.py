@@ -15,7 +15,8 @@
     'author': "Akretion, Camptocamp, Eezee-it, MONK Software, Vauxoo, Eficent,"
               "Odoo Community Association (OCA)",
     'website': 'http://www.github.com/OCA/rma',
-    'depends': ['account', 'stock', 'mail', 'product_warranty'],
+    'depends': ['account', 'stock', 'mail', 'product_warranty',
+                'procurement'],
     'demo': ['demo/stock.xml',
              'demo/rma.xml'],
     'data': ['security/rma.xml',
@@ -25,6 +26,7 @@
              'views/stock_warehouse.xml',
              'views/invoice_view.xml',
              'views/product_view.xml',
+             'views/procurement_view.xml',
              'wizards/rma_make_picking.xml',
              'wizards/rma_refund.xml',
              'wizards/stock_config_settings.xml'],

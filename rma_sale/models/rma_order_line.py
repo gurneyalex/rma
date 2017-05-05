@@ -31,6 +31,13 @@ class RmaOrderLine(models.Model):
     def _compute_qty_sold(self):
         self.qty_sold = self._get_rma_sold_qty()
 
+    @api.one
+    def _compute_sales_count(self):
+        sales_list = []
+        for sale_order_line in self.sale_line_ids:
+            sales_list.append(sale_order_line.order_id.id)
+        self.sales_count = len(list(set(sales_list)))
+
     sale_line_id = fields.Many2one(comodel_name='sale.order.line',
                                    string='Originating Sales Order Line',
                                    readonly=True,
@@ -51,6 +58,8 @@ class RmaOrderLine(models.Model):
         readonly=True, compute=_compute_qty_sold,
         store=True)
 
+    sales_count = fields.Integer(compute=_compute_sales_count,
+                                string='# of Sales', copy=False, default=0)
     @api.multi
     def action_view_sale_order(self):
         action = self.env.ref('sale.action_quotations')

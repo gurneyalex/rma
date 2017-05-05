@@ -7,20 +7,24 @@
             <field name="model">stock.move</field>
              <field name="inherit_id" ref="stock.view_move_form" />
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='location_dest_id']" position="after">
-                    <field name="rma_id"/>
-                </xpath>
+                <group name="destination_grp" position="after">
+                    <group name="rma">
+                        <field name="rma_line_id"/>
+                    </group>
+                </group>
             </field>
         </record>
 
-        <record model="ir.ui.view" id="stock_move_manual_quants_picking_form_view">
+        <record id="view_move_picking_form" model="ir.ui.view" >
             <field name="name">stock.move.form</field>
             <field name="model">stock.move</field>
             <field name="inherit_id" ref="stock.view_move_picking_form" />
             <field name="arch" type="xml">
-                <field name="string_availability_info" position="after">
-                    <field name="rma_id" groups="rma.rma_user"/>
-                </field>
+                <xpath expr="//group[1]" position="inside">
+                    <group name="rma" colspan="4">
+                        <field name="rma_line_id"/>
+                    </group>
+                </xpath>
             </field>
         </record>
 
@@ -44,7 +48,6 @@
                 <field name="location_id" position="attributes">
                     <attribute name="domain">[('usage', '!=', 'view')]</attribute>
                 </field>
-
             </field>
         </record>
 

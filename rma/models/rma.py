@@ -32,7 +32,7 @@ class RmaOrder(models.Model):
         else:
             return "customer"
 
-    name = fields.Char(string='Reference/Description', index=True,
+    name = fields.Char(string='Order Number', index=True,
                        readonly=True,
                        states={'progress': [('readonly', False)]},
                        copy=False)
@@ -65,7 +65,7 @@ class RmaOrder(models.Model):
                               ('approved', 'Approved'),
                               ('done', 'Done')], string='State', index=True,
                              default='draft')
-    date_rma = fields.Datetime(string='RMA Date', index=True, copy=False)
+    date_rma = fields.Datetime(string='Order Date', index=True, copy=False)
     partner_id = fields.Many2one('res.partner', string='Partner',
                                  required=True, readonly=True,
                                  states={'draft': [('readonly', False)]})
@@ -77,8 +77,7 @@ class RmaOrder(models.Model):
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id)
     rma_line_ids = fields.One2many('rma.order.line', 'rma_id',
-                                   string='RMA lines',
-                                   copy=False)
+                                   string='RMA lines')
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
                                    required=True, readonly=True,
                                    states={'draft': [('readonly', False)]},
@@ -121,7 +120,7 @@ class RmaOrder(models.Model):
     def _compute_invoice_count(self):
         invoice_list = []
         for line in self.rma_line_ids:
-            invoice_list.append(line.invoice_id.id)
+            invoice_list.append(line.invoice_line_id.invoice_id.id)
         self.invoice_count = len(list(set(invoice_list)))
 
     @api.one
@@ -382,7 +381,10 @@ class RmaOrder(models.Model):
 
     @api.multi
     def action_view_lines(self):
-        action = self.env.ref('rma.action_rma_customer_lines')
+        if self.type == 'customer':
+            action = self.env.ref('rma.action_rma_customer_lines')
+        else:
+            action = self.env.ref('rma.action_rma_supplier_lines')
         result = action.read()[0]
         lines = self.rma_line_ids.filtered(
             lambda p: p.warranty_state != 'expired')
@@ -392,7 +394,11 @@ class RmaOrder(models.Model):
             result['domain'] = "[('id', 'in', " + \
                                str(lines.ids) + ")]"
         elif len(lines) == 1:
-            res = self.env.ref('rma.view_rma_line_form', False)
+            if self.type == 'customer':
+                res = self.env.ref('rma.view_rma_line_form', False)
+            else:
+                res = self.env.ref('rma.view_rma_line_supplier_form', False)
+
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = lines.id
         return result
@@ -409,14 +415,14 @@ class RmaOrder(models.Model):
             result['domain'] = "[('id', 'in', " + \
                                str(related_lines) + ")]"
         elif len(lines) == 1:
-            res = self.env.ref('rma.view_rma_line_form', False)
+            res = self.env.ref('rma.view_rma_line_supplier_form', False)
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = related_lines[0]
         return result
 
-
 class RmaOrderLine(models.Model):
     _name = "rma.order.line"
+    _rec_name = "rma_id"
     _order = "sequence"
 
     @api.multi
@@ -528,6 +534,20 @@ class RmaOrderLine(models.Model):
             move_list.append(move.id)
         self.move_count = len(list(set(move_list)))
 
+    @api.one
+    def _compute_procurement_count(self):
+        procurement_list = []
+        for procurement in self.procurement_ids:
+            procurement_list.append(procurement.id)
+        self.procurement_count = len(list(set(procurement_list)))
+
+    @api.one
+    def _compute_refund_count(self):
+        refund_list = []
+        for inv_line in self.refund_line_ids:
+            refund_list.append(inv_line.invoice_id.id)
+        self.refund_count = len(list(set(refund_list)))
+
     @api.model
     def _default_dest_location_id(self):
         if self.rma_id.warehouse_id.lot_rma_id:
@@ -575,6 +595,11 @@ class RmaOrderLine(models.Model):
             self.limit = datetime.strftime(limit, DEFAULT_SERVER_DATE_FORMAT)
         self.warranty_state = state
 
+    procurement_count = fields.Integer(compute=_compute_procurement_count,
+                                       string='# of Procurements', copy=False,
+                                       default=0)
+    refund_count = fields.Integer(compute=_compute_refund_count,
+                                  string='# of Refunds', copy=False, default=0)
     move_count = fields.Integer(compute=_compute_move_count,
                                 string='# of Moves', copy=False, default=0)
     name = fields.Text(string='Description', required=True)
@@ -610,8 +635,12 @@ class RmaOrderLine(models.Model):
                                  ondelete='restrict')
     price_unit = fields.Monetary(string='Price Unit', readonly=True,
                                  states={'draft': [('readonly', False)]})
-    move_ids = fields.One2many('stock.move', 'rma_id',
+    move_ids = fields.One2many('stock.move', 'rma_line_id',
                                string='Stock Moves', readonly=True,
+                               states={'draft': [('readonly', False)]},
+                               copy=False)
+    procurement_ids = fields.One2many('procurement.order', 'rma_line_id',
+                               string='Procurements', readonly=True,
                                states={'draft': [('readonly', False)]},
                                copy=False)
     currency_id = fields.Many2one('res.currency', string="Currency")
@@ -750,6 +779,21 @@ class RmaOrderLine(models.Model):
             result['res_id'] = moves[0]
         return result
 
+    @api.multi
+    def action_view_procurements(self):
+        action = self.env.ref('procurement.procurement_order_action_exceptions')
+        result = action.read()[0]
+        procurements = self.procurement_ids.ids
+        # choose the view_mode accordingly
+        if len(procurements) != 1:
+            result['domain'] = "[('id', 'in', " + \
+                               str(procurements) + ")]"
+        elif len(procurements) == 1:
+            res = self.env.ref('procurement.procurement_form_view', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = procurements[0]
+        return result
+
 
 class RmaOperation(models.Model):
     _name = 'rma.operation'
@@ -769,10 +813,10 @@ class RmaOperation(models.Model):
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
         string="Delivery Policy", required=True, default='no')
-    route_customer = fields.Many2one(
+    customer_route_id = fields.Many2one(
         'stock.location.route', string='Customer Route',
         domain=[('rma_selectable', '=', True)])
-    route_supplier = fields.Many2one(
+    supplier_route_id = fields.Many2one(
         'stock.location.route', string='Supplier Route',
         domain=[('rma_selectable', '=', True)])
     is_dropship = fields.Boolean('Dropship', default=False)

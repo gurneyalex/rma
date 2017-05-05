@@ -18,6 +18,7 @@
                     </group>
                     <field name="item_ids">
                         <tree string="RMA Lines" editable="bottom">
+                            <field name="rma_id"/>
                             <field name="product_id"/>
                             <field name="name"/>
                             <field name="product_qty"/>

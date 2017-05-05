@@ -6,8 +6,8 @@
         <field name="refund_type">no</field>
         <field name="shipment_type">ordered</field>
         <field name="delivery_type">received</field>
-        <field name="route_customer" ref="rma.route_rma_customer"/>
-        <field name="route_supplier" ref="rma.route_rma_supplier"/>
+        <field name="customer_route_id" ref="rma.route_rma_customer"/>
+        <field name="supplier_route_id" ref="rma.route_rma_supplier"/>
         <field name="is_dropship">False</field>
     </record>
 
@@ -17,8 +17,8 @@
         <field name="refund_type">ordered</field>
         <field name="shipment_type">no</field>
         <field name="delivery_type">no</field>
-        <field name="route_customer" ref="rma.route_rma_customer"/>
-        <field name="route_supplier" ref="rma.route_rma_supplier"/>
+        <field name="customer_route_id" ref="rma.route_rma_customer"/>
+        <field name="supplier_route_id" ref="rma.route_rma_supplier"/>
         <field name="is_dropship">False</field>
     </record>
 
@@ -28,8 +28,8 @@
         <field name="refund_type">no</field>
         <field name="shipment_type">ordered</field>
         <field name="delivery_type">received</field>
-        <field name="route_customer" ref="rma.route_rma_dropship"/>
-        <field name="route_supplier" ref="rma.route_rma_dropship"/>
+        <field name="customer_route_id" ref="rma.route_rma_dropship"/>
+        <field name="supplier_route_id" ref="rma.route_rma_dropship"/>
         <field name="is_dropship">True</field>
     </record>
 </odoo>

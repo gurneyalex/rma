@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="account.invoice_form"/>
         <field name="arch" type="xml">
             <field name="number" position="before">
-                <div class="oe_button_box">
+                <div class="oe_button_box" attrs="{'invisible': [('rma_count', '=', 0)]}">
                     <button type="object"  name="action_view_rma"
                             class="oe_stat_button"
                             icon="fa-eject"
@@ -27,7 +27,7 @@
         <field name="inherit_id" ref="account.invoice_supplier_form"/>
         <field name="arch" type="xml">
             <field name="number" position="before">
-                <div class="oe_button_box">
+                <div class="oe_button_box" attrs="{'invisible': [('rma_count', '=', 0)]}">
                     <button type="object"  name="action_view_rma_supplier"
                             class="oe_stat_button"
                             icon="fa-eject"

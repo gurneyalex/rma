@@ -9,6 +9,7 @@
                 <separator string="Select lines for picking"/>
                 <field name="item_ids">
                     <tree string="RMA Lines" editable="bottom">
+                        <field name="rma_id"/>
                         <field name="product_id"/>
                         <field name="name"/>
                         <field name="product_qty"/>
@@ -18,7 +19,7 @@
                 </field>
                 <footer>
                     <button
-                            string="Create Incoming Shipment"
+                            string="Create Inbound Procurement"
                             name="action_create_picking" type="object"
                             class="oe_highlight"/>
                     or
@@ -37,6 +38,7 @@
                 <separator string="Select lines for picking"/>
                 <field name="item_ids">
                     <tree string="RMA Lines" editable="bottom">
+                        <field name="rma_id"/>
                         <field name="product_id"/>
                         <field name="name"/>
                         <field name="product_qty"/>
@@ -45,7 +47,7 @@
                 </field>
                 <footer>
                     <button
-                            string="Deliver Products"
+                            string="Create Outbound Procurement"
                             name="action_create_picking" type="object"
                             class="oe_highlight"/>
                     or
@@ -57,7 +59,7 @@
     </record>
 
     <record id="action_rma_picking_in" model="ir.actions.act_window">
-        <field name="name">Create Incoming Shipment</field>
+        <field name="name">Create Inbound Procurement</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -70,7 +72,7 @@
     </record>
 
     <record id="action_rma_picking_out" model="ir.actions.act_window">
-        <field name="name">Create Delivery Order</field>
+        <field name="name">Create Outbound Procurement</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -84,7 +86,7 @@
 
     <record model="ir.values" id="values_action_rma_picking_in">
         <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Create Incoming Shipment</field>
+        <field name="name">Create Inbound Procurement</field>
         <field name="key2">client_action_multi</field>
         <field name="value" eval="'ir.actions.act_window,' + str(ref('action_rma_picking_in'))" />
         <field name="key">action</field>
@@ -93,7 +95,7 @@
 
     <record model="ir.values" id="values_action_rma_picking_out">
         <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Create Outgoing Shipments</field>
+        <field name="name">Create Outbound Procurement</field>
         <field name="key2">client_action_multi</field>
         <field name="value"
                eval="'ir.actions.act_window,' + str(ref('action_rma_picking_out'))" />

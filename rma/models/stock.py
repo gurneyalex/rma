@@ -15,7 +15,7 @@ class StockPicking(models.Model):
     def action_assign(self):
         for picking in self:
             for move in picking.move_lines:
-                if len(move.rma_id):
+                if len(move.rma_line_id):
                     if move.state in ('confirmed', 'waiting', 'assigned') \
                             and move.location_id.usage in (
                                 'supplier', 'customer'):
@@ -27,12 +27,12 @@ class StockMove(models.Model):
 
     _inherit = "stock.move"
 
-    rma_id = fields.Many2one('rma.order.line', string='RMA',
+    rma_line_id = fields.Many2one('rma.order.line', string='RMA',
                              ondelete='restrict')
 
     @api.model
     def _prepare_picking_assign(self, move):
         res = super(StockMove, self)._prepare_picking_assign(move)
         if 'rma' in self.env.context:
-            res['rma_id'] = self.env.context['rma']
+            res['rma_line_id'] = self.env.context['rma']
         return res

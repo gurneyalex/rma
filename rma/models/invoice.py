@@ -70,7 +70,7 @@ class AccountInvoiceLine(models.Model):
     rma_line_ids = fields.One2many(
         comodel_name='rma.order.line', inverse_name='invoice_line_id',
         string="RMA", readonly=True,
-        help="This will contain the rmas for the invoice line")
+        help="This will contain the RMA lines for the invoice line")
 
     rma_line_id = fields.Many2one(
         comodel_name='rma.order.line',
