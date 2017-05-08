@@ -92,7 +92,7 @@
                                 icon="fa-warning"
                                 groups="stock.group_stock_user">
                             <field name="procurement_count" widget="statinfo"
-                                   string="Procurements"/>
+                                   string="Proc. Exceptions"/>
                         </button>
                     </div>
                     <group>
@@ -306,7 +306,7 @@
                             attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_manager"/>
                     <button name="action_rma_done" type="object"
                             string="Done"
-                            attrs="{'invisible':[('state', '!=', 'approved')]}"
+                            attrs="{'invisible':[('state', 'in', ('done', 'draft'))]}"
                             groups="rma.group_rma_manager"/>
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>
@@ -447,7 +447,7 @@
                             attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_manager"/>
                     <button name="action_rma_done" type="object"
                             string="Done"
-                            attrs="{'invisible':[('state', '!=', 'approved')]}"
+                            attrs="{'invisible':[('state', 'in', ('done', 'draft'))]}"
                             groups="rma.group_rma_manager"/>
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>

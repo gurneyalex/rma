@@ -205,7 +205,8 @@ class RmaMakePicking(models.TransientModel):
                     action['domain'] = "[('id', 'in', " + \
                                        str(procurement_ids) + ")]"
                 elif len(procurements) == 1:
-                    res = self.env.ref('procurement.procurement_form_view', False)
+                    res = self.env.ref('procurement.procurement_form_view',
+                                       False)
                     action['views'] = [(res and res.id or False, 'form')]
                     action['res_id'] = procurement_ids[0]
         return action

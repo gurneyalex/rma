@@ -86,9 +86,10 @@ class RmaOrder(models.Model):
     @api.model
     def create(self, vals):
         if self.env.context.get('supplier'):
-            vals['name'] = self.env['ir.sequence'].get('rma.order.supplier')
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'rma.order.supplier')
         else:
-            vals['name'] = self.env['ir.sequence'].get('rma.order')
+            vals['name'] = self.env['ir.sequence'].next_by_code('rma.order')
 
         return super(RmaOrder, self).create(vals)
 
@@ -120,7 +121,8 @@ class RmaOrder(models.Model):
     def _compute_invoice_count(self):
         invoice_list = []
         for line in self.rma_line_ids:
-            invoice_list.append(line.invoice_line_id.invoice_id.id)
+            if line.invoice_line_id and line.invoice_line_id.id:
+                invoice_list.append(line.invoice_line_id.invoice_id.id)
         self.invoice_count = len(list(set(invoice_list)))
 
     @api.one
@@ -431,7 +433,9 @@ class RmaOrderLine(models.Model):
         qty = 0.0
         suppliers = self.env.ref('stock.stock_location_suppliers')
         customers = self.env.ref('stock.stock_location_customers')
-        for move in self.move_ids.filtered(
+        moves = self.env['stock.move'].search(
+            [('procurement_id', 'in', self.procurement_ids.ids)])
+        for move in moves.filtered(
                 lambda m: m.state in states):
             if self.type == 'customer':
                 if move.location_id == customers and shipment:
@@ -446,14 +450,14 @@ class RmaOrderLine(models.Model):
         return qty
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_incoming(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), True, False)
         self.qty_incoming = qty
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_to_receive(self):
         if self.operation_id.shipment_type == 'no':
             self.qty_to_receive = 0.0
@@ -461,13 +465,17 @@ class RmaOrderLine(models.Model):
             qty = self._get_rma_move_qty(('done'), True, False)
             self.qty_to_receive = self.product_qty - qty
         elif self.operation_id.shipment_type == 'received':
-            qty = self._get_rma_move_qty(('done'), True, False)
-            self.qty_to_receive = self.qty_received - qty
+            if self.type == 'customer':
+                qty = self._get_rma_move_qty(('done'), True, False)
+                self.qty_to_receive = self.qty_received - qty
+            else:
+                qty = self._get_rma_move_qty(('done'), False, True)
+            self.qty_to_receive = qty - self.qty_received
         else:
             self.qty_to_receive = 0.0
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_to_deliver(self):
         if self.operation_id.delivery_type == 'no':
             self.qty_to_deliver = 0.0
@@ -481,20 +489,20 @@ class RmaOrderLine(models.Model):
             self.qty_to_deliver = 0.0
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_received(self):
         qty = self._get_rma_move_qty(('done'), True, False)
         self.qty_received = qty
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_outgoing(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), False, True)
         self.qty_outgoing = qty
 
     @api.one
-    @api.depends('move_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
     def _compute_qty_delivered(self):
         qty = self._get_rma_move_qty(('done'), False, True)
         self.qty_delivered = qty
@@ -537,7 +545,8 @@ class RmaOrderLine(models.Model):
     @api.one
     def _compute_procurement_count(self):
         procurement_list = []
-        for procurement in self.procurement_ids:
+        for procurement in self.procurement_ids.filtered(
+                lambda p: p.state == 'exception'):
             procurement_list.append(procurement.id)
         self.procurement_count = len(list(set(procurement_list)))
 
@@ -640,9 +649,9 @@ class RmaOrderLine(models.Model):
                                states={'draft': [('readonly', False)]},
                                copy=False)
     procurement_ids = fields.One2many('procurement.order', 'rma_line_id',
-                               string='Procurements', readonly=True,
-                               states={'draft': [('readonly', False)]},
-                               copy=False)
+                                      string='Procurements', readonly=True,
+                                      states={'draft': [('readonly', False)]},
+                                      copy=False)
     currency_id = fields.Many2one('res.currency', string="Currency")
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id)
@@ -783,7 +792,8 @@ class RmaOrderLine(models.Model):
     def action_view_procurements(self):
         action = self.env.ref('procurement.procurement_order_action_exceptions')
         result = action.read()[0]
-        procurements = self.procurement_ids.ids
+        procurements = self.procurement_ids.filtered(
+                lambda p: p.state == 'exception').ids
         # choose the view_mode accordingly
         if len(procurements) != 1:
             result['domain'] = "[('id', 'in', " + \

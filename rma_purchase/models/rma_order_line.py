@@ -15,12 +15,23 @@ class RmaOrderLine(models.Model):
     @api.one
     def _compute_purchase_count(self):
         purchase_list = []
-        for purchase_order_line in self.purchase_order_line_ids:
-            purchase_list.append(purchase_order_line.order_id.id)
+        for procurement_id in self.procurement_ids:
+            if procurement_id.purchase_id and procurement_id.purchase_id.id:
+                purchase_list.append(procurement_id.purchase_id.id)
         self.purchase_count = len(list(set(purchase_list)))
 
     @api.one
-    @api.depends('purchase_order_line_ids')
+    @api.depends('procurement_ids.purchase_line_id')
+    def _get_purchase_order_lines(self):
+        purchase_list = []
+        for procurement_id in self.procurement_ids:
+            if procurement_id.purchase_line_id and \
+                    procurement_id.purchase_line_id.id:
+                purchase_list.append(procurement_id.purchase_line_id.id)
+        self.purchase_order_line_ids = [(6, 0, purchase_list)]
+
+    @api.one
+    @api.depends('procurement_ids.purchase_line_id')
     def _compute_qty_purchased(self):
         self.qty_purchased = self._get_rma_purchased_qty()
 
@@ -30,14 +41,13 @@ class RmaOrderLine(models.Model):
                                              string='Origin Purchase Line',
                                              ondelete='set null',
                                              index=True, readonly=True)
-    # It has to be many to many because the po line relates many procurements
     purchase_order_line_ids = fields.Many2many(
         'purchase.order.line', 'purchase_line_rma_line_rel',
         'rma_order_line_id', 'purchase_order_line_id',
-        string='Purchase Order Lines', copy=False)
+        string='Purchase Order Lines', compute=_get_purchase_order_lines)
 
     qty_purchased = fields.Float(
-        string='Qty Sold', copy=False,
+        string='Qty Purchased', copy=False,
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True, compute=_compute_qty_purchased,
         store=True)
@@ -46,8 +56,8 @@ class RmaOrderLine(models.Model):
         action = self.env.ref('purchase.purchase_rfq')
         result = action.read()[0]
         order_ids = []
-        for purchase_line in self.purchase_order_line_ids:
-            order_ids.append(purchase_line.order_id.id)
+        for procurement_id in self.procurement_ids:
+            order_ids.append(procurement_id.purchase_id.id)
         result['domain'] = [('id', 'in', order_ids)]
         return result
 
@@ -55,7 +65,8 @@ class RmaOrderLine(models.Model):
     def _get_rma_purchased_qty(self):
         self.ensure_one()
         qty = 0.0
-        for purchase_line in self.purchase_order_line_ids:
+        for procurement_id in self.procurement_ids:
+            purchase_line = procurement_id.purchase_line_id
             if self.type == 'supplier':
                 qty += purchase_line.product_qty
             else:
