@@ -77,7 +77,6 @@ class RmaOrderLine(models.Model):
         for sale_line in self.sale_line_ids:
             if self.type == 'customer':
                 qty += sale_line.product_uom_qty
-
             else:
                 qty = 0.0
 

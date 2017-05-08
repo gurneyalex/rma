@@ -77,7 +77,7 @@ class RmaLineMakeSaleOrder(models.TransientModel):
             'order_id': so.id,
             'product_id': product.id,
             'product_uom': product.uom_po_id.id,
-            'route_id': item.line_id.operation_id.route_customer.id,
+            'route_id': item.line_id.operation_id.customer_route_id.id,
             'product_qty': item.product_qty,
             'rma_line_id': item.line_id.id
         }
