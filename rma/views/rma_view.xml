@@ -67,13 +67,21 @@
             <field name="name">rma.order.line.supplier.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="Rma Line">
+                <form string="RMA Line">
                     <div name="button_box" class="oe_button_box">
-                        <button type="object"  name="action_view_moves"
+                        <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
-                                icon="fa-truck">
-                            <field name="move_count" widget="statinfo"
-                                   string="Stock Moves"/>
+                                icon="fa-truck"
+                                groups="stock.group_stock_user">
+                            <field name="in_shipment_count" widget="statinfo"
+                                   string="Shipments"/>
+                        </button>
+                        <button type="object"  name="action_view_out_shipments"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                groups="stock.group_stock_user">
+                            <field name="out_shipment_count" widget="statinfo"
+                                   string="Deliveries"/>
                         </button>
                         <button type="object"  name="action_view_refunds"
                                 class="oe_stat_button"
@@ -163,11 +171,19 @@
             <field name="arch" type="xml">
                 <form string="Rma Line">
                     <div name="button_box" class="oe_button_box">
-                        <button type="object"  name="action_view_moves"
+                        <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
-                                icon="fa-truck">
-                            <field name="move_count" widget="statinfo"
-                                   string="Stock Moves"/>
+                                icon="fa-truck"
+                                groups="stock.group_stock_user">
+                            <field name="in_shipment_count" widget="statinfo"
+                                   string="Shipments"/>
+                        </button>
+                        <button type="object"  name="action_view_out_shipments"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                groups="stock.group_stock_user">
+                            <field name="out_shipment_count" widget="statinfo"
+                                   string="Deliveries"/>
                         </button>
                         <button type="object"  name="action_view_refunds"
                                 class="oe_stat_button"
@@ -208,7 +224,8 @@
                         </group>
                         <group name="operation" string="Operation">
                             <field name="product_qty"/>
-                            <field name="operation_id"/>
+                            <field name="operation_id"
+                            context="{'form_view_ref':'rma.rma_operation_form'}"/>
                             <field name="is_dropship" invisible="True"/>
                             <field name="partner_address_id"
                                    attrs="{'required':[('is_dropship', '=', True)]}"/>
@@ -311,7 +328,7 @@
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>
                 <sheet string="RMA">
-                    <div class="oe_button_box">
+                    <div class="oe_button_box" name="button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
                                 icon="fa-truck"
@@ -452,7 +469,7 @@
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>
                 <sheet string="RMA">
-                    <div class="oe_button_box">
+                    <div class="oe_button_box" name="button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
                                 icon="fa-truck"
@@ -535,7 +552,8 @@
                                     <field name="warranty_state"/>
                                     <field name="limit"
                                            attrs="{'invisible':[('warranty_state', '=', 'undefined')]}"/>
-                                    <field name="operation_id"/>
+                                    <field name="operation_id"
+                                    context="{'form_view_ref':'rma.rma_operation_supplier_form'}"/>
                                     <field name="product_qty"/>
                                     <field name="uom_id" groups="product.group_uom"/>
                                     <field name="price_unit"/>
@@ -607,9 +625,9 @@
                 <tree string="RMA Operations">
                     <field name="code"/>
                     <field name="name"/>
-                    <field name="refund_type"/>
-                    <field name="shipment_type"/>
-                    <field name="delivery_type"/>
+                    <field name="refund_policy"/>
+                    <field name="receipt_policy"/>
+                    <field name="delivery_policy"/>
                     <field name="customer_route_id"/>
                     <field name="supplier_route_id"/>
                     <field name="is_dropship"/>
@@ -623,14 +641,52 @@
             <field name="arch" type="xml">
                 <form string="RMA Operations">
                     <group colspan="4" col="2">
-                        <field name="code"/>
-                        <field name="name"/>
-                        <field name="refund_type"/>
-                        <field name="shipment_type"/>
-                        <field name="delivery_type"/>
-                        <field name="customer_route_id"/>
-                        <field name="supplier_route_id"/>
-                        <field name="is_dropship"/>
+                        <group name="description"
+                               string="Description">
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group name="policies"
+                               string="Policies">
+                            <field name="refund_policy"/>
+                            <field name="receipt_policy"/>
+                            <field name="delivery_policy"/>
+                        </group>
+                        <group name="routes"
+                               string="Routes">
+                            <field name="customer_route_id"/>
+                            <field name="supplier_route_id"/>
+                        </group>
+                        <group name="dropship" string="Dropship">
+                            <field name="is_dropship"
+                                   string="Receive in Supplier's Address"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="rma_operation_supplier_form" model="ir.ui.view">
+            <field name="name">rma.operation.supplier.form</field>
+            <field name="model">rma.operation</field>
+            <field name="arch" type="xml">
+                <form string="RMA Operations">
+                    <group>
+                        <group name="description" colspan="4" col="2"
+                               string="Description">
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group name="policies" colspan="4" col="2"
+                               string="Policies">
+                            <field name="refund_policy"/>
+                            <field name="receipt_policy"/>
+                            <field name="delivery_policy"/>
+                        </group>
+                        <group name="routes" colspan="4" col="2"
+                               string="Routes">
+                            <field name="supplier_route_id"/>
+                        </group>
                     </group>
                 </form>
             </field>

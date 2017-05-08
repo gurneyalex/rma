@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  crm_claim_rma for OpenERP
-  Copyright (c) 2015 Eezee-It  (www.eezee-it.com)
-  Copyright (C) 2011 Akretion Benoît GUILLOT <benoit.guillot@akretion.com>
-  The licence is in the file __openerp__.py
--->
 <odoo>
     <record id="view_claim_picking" model="ir.ui.view">
         <field name="name">claim_picking</field>
@@ -18,7 +12,7 @@
                            required="context.get('picking_type') != 'out'"/>
                     <field name="claim_line_dest_location_id"/>
                 </group>
-                <separator string="Select lines for picking"/>
+                <separator string="Select lines"/>
                 <field name="claim_line_ids" nolabel="1"/>
                 <footer>
                     <button

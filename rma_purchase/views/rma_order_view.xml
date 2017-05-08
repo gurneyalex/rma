@@ -13,6 +13,15 @@
                            attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"
                            context="{'partner_id': partner_id}"/>
                 </field>
+                <div name='button_box' position="inside">
+                    <button type="object"  name="action_view_purchase_order"
+                            class="oe_stat_button"
+                            icon="fa-shopping-cart"
+                            groups="purchase.group_purchase_user">
+                            <field name="po_line_count" widget="statinfo"
+                                   string="Purchase Orders"/>
+                    </button>
+                </div>
             </field>
         </record>
 

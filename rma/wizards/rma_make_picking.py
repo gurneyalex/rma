@@ -170,11 +170,11 @@ class RmaMakePicking(models.TransientModel):
                 raise exceptions.Warning(
                     _('RMA %s is not approved') %
                     line.rma_id.name)
-            if line.operation_id.shipment_type == 'no' and picking_type == \
+            if line.operation_id.receipt_policy == 'no' and picking_type == \
                     'incoming':
                 raise exceptions.Warning(
                     _('No shipments needed for this operation'))
-            if line.operation_id.delivery_type == 'no' and picking_type == \
+            if line.operation_id.delivery_policy == 'no' and picking_type == \
                     'outgoing':
                 raise exceptions.Warning(
                     _('No deliveries needed for this operation'))

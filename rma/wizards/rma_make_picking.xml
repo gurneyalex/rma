@@ -19,7 +19,7 @@
                 </field>
                 <footer>
                     <button
-                            string="Create Inbound Procurement"
+                            string="Confirm"
                             name="action_create_picking" type="object"
                             class="oe_highlight"/>
                     or
@@ -47,7 +47,7 @@
                 </field>
                 <footer>
                     <button
-                            string="Create Outbound Procurement"
+                            string="Confirm"
                             name="action_create_picking" type="object"
                             class="oe_highlight"/>
                     or
@@ -59,7 +59,7 @@
     </record>
 
     <record id="action_rma_picking_in" model="ir.actions.act_window">
-        <field name="name">Create Inbound Procurement</field>
+        <field name="name">rma.picking.in</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -72,7 +72,7 @@
     </record>
 
     <record id="action_rma_picking_out" model="ir.actions.act_window">
-        <field name="name">Create Outbound Procurement</field>
+        <field name="name">rma.picking.out</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -84,23 +84,59 @@
         <field name="context">{'picking_type': 'outgoing'}</field>
     </record>
 
-    <record model="ir.values" id="values_action_rma_picking_in">
-        <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Create Inbound Procurement</field>
-        <field name="key2">client_action_multi</field>
-        <field name="value" eval="'ir.actions.act_window,' + str(ref('action_rma_picking_in'))" />
-        <field name="key">action</field>
+    <record id="view_rma_line_button_form" model="ir.ui.view">
+        <field name="name">rma.order.line.form</field>
         <field name="model">rma.order.line</field>
+        <field name="inherit_id" ref="rma.view_rma_line_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="before">
+                <header>
+                    <button name="%(action_rma_picking_in)d" states="approved"
+                            string="Receive Products" class="oe_highlight"
+                            type="action"/>
+                    <button name="%(action_rma_picking_out)d" states="approved"
+                            string="Deliver Products" class="oe_highlight"
+                            type="action"/>
+                </header>
+            </div>
+        </field>
     </record>
 
-    <record model="ir.values" id="values_action_rma_picking_out">
-        <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Create Outbound Procurement</field>
-        <field name="key2">client_action_multi</field>
-        <field name="value"
-               eval="'ir.actions.act_window,' + str(ref('action_rma_picking_out'))" />
-        <field name="key">action</field>
+    <record id="view_rma_line_supplier_button_form" model="ir.ui.view">
+        <field name="name">rma.order.line.supplier.form</field>
         <field name="model">rma.order.line</field>
+        <field name="inherit_id" ref="rma.view_rma_line_supplier_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="before">
+                <header>
+                    <button name="%(action_rma_picking_in)d" states="approved"
+                            string="Receive Products / Buy" class="oe_highlight"
+                            type="action"/>
+                    <button name="%(action_rma_picking_out)d" states="approved"
+                            string="Deliver Products" class="oe_highlight"
+                            type="action"/>
+                </header>
+            </div>
+        </field>
     </record>
+
+    <!--<record model="ir.values" id="values_action_rma_picking_in">-->
+        <!--<field name="model_id" ref="model_rma_order_line"/>-->
+        <!--<field name="name">Create Inbound Procurement</field>-->
+        <!--<field name="key2">client_action_multi</field>-->
+        <!--<field name="value" eval="'ir.actions.act_window,' + str(ref('action_rma_picking_in'))" />-->
+        <!--<field name="key">action</field>-->
+        <!--<field name="model">rma.order.line</field>-->
+    <!--</record>-->
+
+    <!--<record model="ir.values" id="values_action_rma_picking_out">-->
+        <!--<field name="model_id" ref="model_rma_order_line"/>-->
+        <!--<field name="name">Create Outbound Procurement</field>-->
+        <!--<field name="key2">client_action_multi</field>-->
+        <!--<field name="value"-->
+               <!--eval="'ir.actions.act_window,' + str(ref('action_rma_picking_out'))" />-->
+        <!--<field name="key">action</field>-->
+        <!--<field name="model">rma.order.line</field>-->
+    <!--</record>-->
 
 </odoo>

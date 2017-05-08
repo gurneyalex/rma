@@ -427,6 +427,38 @@ class RmaOrderLine(models.Model):
     _rec_name = "rma_id"
     _order = "sequence"
 
+    @api.one
+    def _compute_in_shipment_count(self):
+        picking_ids = []
+        suppliers = self.env.ref('stock.stock_location_suppliers')
+        customers = self.env.ref('stock.stock_location_customers')
+        for line in self:
+            if line.type == 'customer':
+                for move in line.move_ids:
+                    if move.picking_id.location_id == customers:
+                        picking_ids.append(move.picking_id.id)
+            else:
+                for move in line.move_ids:
+                    if move.picking_id.location_id == suppliers:
+                        picking_ids.append(move.picking_id.id)
+        self.in_shipment_count = len(list(set(picking_ids)))
+
+    @api.one
+    def _compute_out_shipment_count(self):
+        picking_ids = []
+        suppliers = self.env.ref('stock.stock_location_suppliers')
+        customers = self.env.ref('stock.stock_location_customers')
+        for line in self:
+            if line.type == 'customer':
+                for move in line.move_ids:
+                    if move.picking_id.location_id != customers:
+                        picking_ids.append(move.picking_id.id)
+            else:
+                for move in line.move_ids:
+                    if move.picking_id.location_id != suppliers:
+                        picking_ids.append(move.picking_id.id)
+        self.out_shipment_count = len(list(set(picking_ids)))
+
     @api.multi
     def _get_rma_move_qty(self, states, shipment=False, delivery=False):
         self.ensure_one()
@@ -450,21 +482,25 @@ class RmaOrderLine(models.Model):
         return qty
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_incoming(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), True, False)
         self.qty_incoming = qty
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_to_receive(self):
-        if self.operation_id.shipment_type == 'no':
+        if self.operation_id.receipt_policy == 'no':
             self.qty_to_receive = 0.0
-        elif self.operation_id.shipment_type == 'ordered':
+        elif self.operation_id.receipt_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), True, False)
             self.qty_to_receive = self.product_qty - qty
-        elif self.operation_id.shipment_type == 'received':
+        elif self.operation_id.receipt_policy == 'received':
             if self.type == 'customer':
                 qty = self._get_rma_move_qty(('done'), True, False)
                 self.qty_to_receive = self.qty_received - qty
@@ -475,34 +511,42 @@ class RmaOrderLine(models.Model):
             self.qty_to_receive = 0.0
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_to_deliver(self):
-        if self.operation_id.delivery_type == 'no':
+        if self.operation_id.delivery_policy == 'no':
             self.qty_to_deliver = 0.0
-        elif self.operation_id.delivery_type == 'ordered':
+        elif self.operation_id.delivery_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), False, True)
             self.qty_to_deliver = self.product_qty - qty
-        elif self.operation_id.delivery_type == 'received':
+        elif self.operation_id.delivery_policy == 'received':
             qty = self._get_rma_move_qty(('done'), False, True)
             self.qty_to_deliver = self.qty_received - qty
         else:
             self.qty_to_deliver = 0.0
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_received(self):
         qty = self._get_rma_move_qty(('done'), True, False)
         self.qty_received = qty
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_outgoing(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), False, True)
         self.qty_outgoing = qty
 
     @api.one
-    @api.depends('procurement_ids.state', 'state', 'operation_id', 'type')
+    @api.depends('procurement_ids.state', 'state',
+                 'operation_id.receipt_policy',
+                 'operation_id.delivery_policy', 'type')
     def _compute_qty_delivered(self):
         qty = self._get_rma_move_qty(('done'), False, True)
         self.qty_delivered = qty
@@ -511,7 +555,7 @@ class RmaOrderLine(models.Model):
     @api.depends('refund_line_ids', 'state', 'operation_id', 'type')
     def _compute_qty_refunded(self):
         qty = 0.0
-        if self.operation_id.refund_type == 'no':
+        if self.operation_id.refund_policy == 'no':
             self.qty_refunded = qty
         for refund in self.refund_line_ids:
             if refund.invoice_id.state != 'cancel':
@@ -523,11 +567,11 @@ class RmaOrderLine(models.Model):
                  'refund_line_ids')
     def _compute_qty_to_refund(self):
         qty = 0.0
-        if self.operation_id.refund_type == 'no':
+        if self.operation_id.refund_policy == 'no':
             self.qty_to_refund = qty
-        elif self.operation_id.refund_type == 'ordered':
+        elif self.operation_id.refund_policy == 'ordered':
             qty = self.product_qty
-        elif self.operation_id.refund_type == 'received':
+        elif self.operation_id.refund_policy == 'received':
             qty = self.qty_received
         if self.refund_line_ids:
             for refund in self.refund_line_ids:
@@ -609,8 +653,12 @@ class RmaOrderLine(models.Model):
                                        default=0)
     refund_count = fields.Integer(compute=_compute_refund_count,
                                   string='# of Refunds', copy=False, default=0)
-    move_count = fields.Integer(compute=_compute_move_count,
-                                string='# of Moves', copy=False, default=0)
+    in_shipment_count = fields.Integer(compute=_compute_in_shipment_count,
+                                       string='# of Shipments', copy=False,
+                                       default=0)
+    out_shipment_count = fields.Integer(compute=_compute_out_shipment_count,
+                                       string='# of Deliveries', copy=False,
+                                       default=0)
     name = fields.Text(string='Description', required=True)
     origin = fields.Char(string='Source Document',
                          help="Reference of the document that produced "
@@ -773,19 +821,57 @@ class RmaOrderLine(models.Model):
         return result
 
     @api.multi
-    def action_view_moves(self):
-        action = self.env.ref('stock.action_move_form2')
+    def action_view_in_shipments(self):
+        action = self.env.ref('stock.action_picking_tree_all')
         result = action.read()[0]
-        moves = self.move_ids.ids
+        picking_ids = []
+        suppliers = self.env.ref('stock.stock_location_suppliers')
+        customers = self.env.ref('stock.stock_location_customers')
+        for line in self:
+            if line.type == 'customer':
+                for move in line.move_ids:
+                    if move.picking_id.location_id == customers:
+                        picking_ids.append(move.picking_id.id)
+            else:
+                for move in line.move_ids:
+                    if move.picking_id.location_id == suppliers:
+                        picking_ids.append(move.picking_id.id)
+        shipments = list(set(picking_ids))
         # choose the view_mode accordingly
-        if len(moves) != 1:
+        if len(shipments) != 1:
             result['domain'] = "[('id', 'in', " + \
-                               str(moves) + ")]"
-            result['target'] = 'new'
-        elif len(moves) == 1:
-            res = self.env.ref('stock.view_move_form', False)
+                               str(shipments) + ")]"
+        elif len(shipments) == 1:
+            res = self.env.ref('stock.view_picking_form', False)
             result['views'] = [(res and res.id or False, 'form')]
-            result['res_id'] = moves[0]
+            result['res_id'] = shipments[0]
+        return result
+
+    @api.multi
+    def action_view_out_shipments(self):
+        action = self.env.ref('stock.action_picking_tree_all')
+        result = action.read()[0]
+        picking_ids = []
+        suppliers = self.env.ref('stock.stock_location_suppliers')
+        customers = self.env.ref('stock.stock_location_customers')
+        for line in self:
+            if line.type == 'customer':
+                for move in line.move_ids:
+                    if move.picking_id.location_id != customers:
+                        picking_ids.append(move.picking_id.id)
+            else:
+                for move in line.move_ids:
+                    if move.picking_id.location_id != suppliers:
+                        picking_ids.append(move.picking_id.id)
+        shipments = list(set(picking_ids))
+        # choose the view_mode accordingly
+        if len(shipments) != 1:
+            result['domain'] = "[('id', 'in', " + \
+                               str(shipments) + ")]"
+        elif len(shipments) == 1:
+            res = self.env.ref('stock.view_picking_form', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = shipments[0]
         return result
 
     @api.multi
@@ -811,17 +897,17 @@ class RmaOperation(models.Model):
 
     name = fields.Char('Description', required=True)
     code = fields.Char('Code', required=True)
-    refund_type = fields.Selection([
+    refund_policy = fields.Selection([
         ('no', 'No refund'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')], string="Refund Policy",
         required=True, default='no')
-    shipment_type = fields.Selection([
+    receipt_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
-        ('received', 'Based on Received Quantities')],
-        string="Shipment Policy", required=True, default='no')
-    delivery_type = fields.Selection([
+        ('received', 'Based on Delivered Quantities (Supplier RMA)')],
+        string="Receipts Policy", required=True, default='no')
+    delivery_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
-        ('received', 'Based on Received Quantities')],
+        ('received', 'Based on Received Quantities (Customer RMA)')],
         string="Delivery Policy", required=True, default='no')
     customer_route_id = fields.Many2one(
         'stock.location.route', string='Customer Route',

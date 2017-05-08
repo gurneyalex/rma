@@ -13,7 +13,7 @@
                             icon="fa-shopping-cart"
                             groups="purchase.group_purchase_user">
                             <field name="purchase_count" widget="statinfo"
-                                   string="Purcahse Orders"/>
+                                   string="Purchase Orders"/>
                     </button>
                 </div>
                 <group name="quantities" position="inside">

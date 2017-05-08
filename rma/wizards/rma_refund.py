@@ -106,7 +106,7 @@ class RmaRefund(models.TransientModel):
         rma_line_ids = self.env['rma.order.line'].browse(
             self.env.context['active_ids'])
         for line in rma_line_ids:
-            if line.operation_id.refund_type == 'no':
+            if line.operation_id.refund_policy == 'no':
                 raise exceptions.Warning(
                     _('The operation is not refund for at least one line'))
             if line.state != 'approved':
