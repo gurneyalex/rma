@@ -66,13 +66,18 @@ class RmaRefund(models.TransientModel):
         'rma.refund.item',
         'wiz_id', string='Items')
 
+    @api.model
+    def _get_invoice(self, line):
+        return line.invoice_line_id.invoice_id
+
     @api.multi
     def compute_refund(self, mode='refund'):
         for form in self:
             date = form.date or False
             description = form.description
             if len(self.item_ids) > 0:
-                template = self.item_ids[0].line_id.invoice_line_id.invoice_id
+                line = self.item_ids[0].line_id
+                template = self._get_invoice(line)
             else:
                 raise UserError(_('Nothing to refund'))
             values = self._prepare_refund(template, date_invoice=template.date,
@@ -82,7 +87,7 @@ class RmaRefund(models.TransientModel):
             new_refund = self.env['account.invoice'].create(values)
             for item in self.item_ids:
                 line = item.line_id
-                inv = line.invoice_line_id.invoice_id
+                inv = self._get_invoice(line)
                 if inv.state in ['draft', 'proforma2', 'cancel']:
                     raise UserError(_('Cannot refund draft/proforma/cancelled'
                                       ' invoice.'))
