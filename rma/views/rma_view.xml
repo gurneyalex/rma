@@ -1,32 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-        <record id="rma_seq" model="ir.sequence">
-            <field name="name">RMA sequence</field>
-            <field name="code">rma.order</field>
-            <field name="padding">5</field>
-            <field name="prefix">RMA/%(year)s/</field>
-            <field eval="1" name="number_next"/>
-            <field eval="1" name="number_increment"/>
-        </record>
-
-        <record id="rma_supplier_seq" model="ir.sequence">
-            <field name="name">RMA supplier sequence</field>
-            <field name="code">rma.order.supplier</field>
-            <field name="padding">5</field>
-            <field name="prefix">V/RMA/%(year)s/</field>
-            <field eval="1" name="number_next"/>
-            <field eval="1" name="number_increment"/>
-        </record>
-
-        <!-- RMA -->
         <record id="view_rma_line_tree" model="ir.ui.view">
             <field name="name">rma.order.line.tree</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <tree string="RMA Line"
-                      decoration-muted="state in ('draft','to_approve')">
+                      decoration-muted="state in ('draft','to_approve')"
+                      create="false">
                     <field name="rma_id"/>
                     <field name="state"/>
                     <field name="product_id"/>
@@ -47,7 +28,8 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <tree string="RMA Line"
-                      decoration-muted="state in ('draft','to_approve')">
+                      decoration-muted="state in ('draft','to_approve')"
+                      create="false">
                     <field name="rma_id"/>
                     <field name="state"/>
                     <field name="product_id"/>
@@ -67,7 +49,7 @@
             <field name="name">rma.order.line.supplier.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="RMA Line">
+                <form string="RMA Line" create="false">
                     <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
@@ -169,7 +151,7 @@
             <field name="name">rma.order.line.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="Rma Line">
+                <form string="Rma Line" create="false">
                     <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
@@ -224,8 +206,7 @@
                         </group>
                         <group name="operation" string="Operation">
                             <field name="product_qty"/>
-                            <field name="operation_id"
-                            context="{'form_view_ref':'rma.rma_operation_form'}"/>
+                            <field name="operation_id"/>
                             <field name="is_dropship" invisible="True"/>
                             <field name="partner_address_id"
                                    attrs="{'required':[('is_dropship', '=', True)]}"/>
@@ -552,8 +533,7 @@
                                     <field name="warranty_state"/>
                                     <field name="limit"
                                            attrs="{'invisible':[('warranty_state', '=', 'undefined')]}"/>
-                                    <field name="operation_id"
-                                    context="{'form_view_ref':'rma.rma_operation_supplier_form'}"/>
+                                    <field name="operation_id"/>
                                     <field name="product_qty"/>
                                     <field name="uom_id" groups="product.group_uom"/>
                                     <field name="price_unit"/>
@@ -665,33 +645,6 @@
                 </form>
             </field>
         </record>
-
-        <record id="rma_operation_supplier_form" model="ir.ui.view">
-            <field name="name">rma.operation.supplier.form</field>
-            <field name="model">rma.operation</field>
-            <field name="arch" type="xml">
-                <form string="RMA Operations">
-                    <group>
-                        <group name="description" colspan="4" col="2"
-                               string="Description">
-                            <field name="code"/>
-                            <field name="name"/>
-                        </group>
-                        <group name="policies" colspan="4" col="2"
-                               string="Policies">
-                            <field name="refund_policy"/>
-                            <field name="receipt_policy"/>
-                            <field name="delivery_policy"/>
-                        </group>
-                        <group name="routes" colspan="4" col="2"
-                               string="Routes">
-                            <field name="supplier_route_id"/>
-                        </group>
-                    </group>
-                </form>
-            </field>
-        </record>
-
 
         <record id="action_rma_operation" model="ir.actions.act_window">
             <field name="name">Operations</field>
