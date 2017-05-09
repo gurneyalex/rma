@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="view_rma_add_invoice" model="ir.ui.view">
+        <field name="name">rma_add_invoice</field>
+        <field name="model">rma_add_invoice</field>
+        <field name="arch" type="xml">
+            <form tring="Select Invoice from customer">
+                <separator string="Select Invoice from customer"/>
+                <group>
+                    <field name="partner_id"
+                           domain="[('customer','=',True)]"
+                           string="Customer"/>
+                    <field name="invoice_ids"
+                           domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),
+                           ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
+                            context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"
+                           widget="many2many_tags"/>
+                </group>
+                <separator string="Invoices lines to add"/>
+                <field name="invoice_line_ids"
+                       domain="[('invoice_id', 'in', invoice_ids.ids)]"/>
+                <footer>
+                    <button
+                            string="Confirm"
+                            name="add_lines" type="object"
+                            class="oe_highlight"/>
+                    or
+                    <button name="action_cancel"
+                            string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rma_add_invoice" model="ir.actions.act_window">
+        <field name="name">rma_add_invoice</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">rma_add_invoice</field>
+        <field name="src_model">rma.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_rma_add_invoice"/>
+        <field name="groups_id" eval="[(4, ref('rma.group_rma_customer_user')), (4, ref('rma.group_rma_customer_user'))]"/>
+    </record>
+
+
+    <record id="view_rma_add_invoice_form" model="ir.ui.view">
+        <field name="name">rma.order.line.form</field>
+        <field name="model">rma.order</field>
+        <field name="inherit_id" ref="rma.view_rma_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="before">
+                <header>
+                    <button name="%(action_rma_add_invoice)d"
+                            string="Fill RMA lines" class="oe_highlight"
+                            type="action"/>
+                </header>
+            </div>
+        </field>
+    </record>
+
+    <record id="view_rma_add_invoice_button_form" model="ir.ui.view">
+        <field name="name">rma.order.line.supplier.form</field>
+        <field name="model">rma.order</field>
+        <field name="inherit_id" ref="rma.view_rma_supplier_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="before">
+                <header>
+                    <button name="%(action_rma_add_invoice)d"
+                            string="Fill RMA lines" class="oe_highlight"
+                            type="action"/>
+                </header>
+            </div>
+        </field>
+    </record>
+
+
+</odoo>

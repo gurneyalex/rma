@@ -8,3 +8,4 @@
 from . import rma_make_picking
 from . import rma_refund
 from . import stock_config_settings
+from . import rma_add_invoice

@@ -96,8 +96,7 @@ class RmaRefund(models.TransientModel):
                                       ' reconciled, invoice should be'
                                       ' unreconciled first. You can only '
                                       'refund this invoice.'))
-                refund_line_values = self.prepare_refund_line(item)
-                refund_line_values.update(invoice_id=new_refund.id)
+                refund_line_values = self.prepare_refund_line(item, new_refund)
                 self.env['account.invoice.line'].create(
                     refund_line_values)
             # Put the reason in the chatter
@@ -129,15 +128,19 @@ class RmaRefund(models.TransientModel):
         return result
 
     @api.model
-    def prepare_refund_line(self, item):
+    def _get_invoice_line(self, line):
+        return line.invoice_line_id
+
+    @api.model
+    def prepare_refund_line(self, item, refund):
         values = {}
         line = item.line_id
-        inv_line = line.invoice_line_id
+        inv_line = self._get_invoice_line(line)
         for name, field in inv_line._fields.iteritems():
             if name in ('id', 'create_uid', 'create_date', 'write_uid',
                         'write_date'):
                 continue
-            elif field.type == 'many2one' and name != 'invoice_id':
+            elif field.type == 'many2one':
                 values[name] = inv_line[name].id
             elif name == 'origin':
                 values[name] = line.rma_id.name
@@ -147,6 +150,8 @@ class RmaRefund(models.TransientModel):
                 values[name] = line.id
             if name == 'quantity':
                 values[name] = item.qty_to_refund
+            if name == 'invoice_id':
+                values[name] = refund.id
         return values
 
     @api.model

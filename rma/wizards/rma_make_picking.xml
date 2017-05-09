@@ -5,7 +5,7 @@
         <field name="name">rma_picking</field>
         <field name="model">rma_make_picking.wizard</field>
         <field name="arch" type="xml">
-            <form string="Select exchange lines to add in picking">
+            <form string="Select lines for picking" name="lines">
                 <separator string="Select lines for picking"/>
                 <field name="item_ids">
                     <tree string="RMA Lines" editable="bottom">
@@ -34,7 +34,7 @@
         <field name="name">rma_picking_out</field>
         <field name="model">rma_make_picking.wizard</field>
         <field name="arch" type="xml">
-            <form string="Select exchange lines to add in picking">
+            <form string="Select lines for picking" name="lines">
                 <separator string="Select lines for picking"/>
                 <field name="item_ids">
                     <tree string="RMA Lines" editable="bottom">

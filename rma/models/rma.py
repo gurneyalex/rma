@@ -359,7 +359,7 @@ class RmaOrder(models.Model):
                 self = self.with_context(supplier=True)
                 rma_id = self.env['rma.order'].create(rma_values)
             else:
-                rma_id = existing_rmas[:-1]
+                rma_id = existing_rmas[-1]
             for line in lines.filtered(
                     lambda p: p.partner_address_id == partner):
                 # existing_lines = self._get_existing_lines(rma_id, line)
@@ -376,7 +376,6 @@ class RmaOrder(models.Model):
                                         origin_rma.delivery_address_id.id,
                                     'product_id': line.product_id.id,
                                     'parent_id': line.id,
-                                    'operation_id': line.operation_id.id,
                                     'product_qty': line.product_qty,
                                     'rma_id': rma_id.id}
                                 self.env['rma.order.line'].create(line_values)
@@ -929,11 +928,11 @@ class RmaOperation(models.Model):
         required=True, default='no')
     receipt_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
-        ('received', 'Based on Delivered Quantities (Supplier RMA)')],
+        ('received', 'Based on Delivered Quantities')],
         string="Receipts Policy", required=True, default='no')
     delivery_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
-        ('received', 'Based on Received Quantities (Customer RMA)')],
+        ('received', 'Based on Received Quantities')],
         string="Delivery Policy", required=True, default='no')
     customer_route_id = fields.Many2one(
         'stock.location.route', string='Customer Route',

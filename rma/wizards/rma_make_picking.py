@@ -232,8 +232,7 @@ class RmaMakePickingItem(models.TransientModel):
                              string='RMA',
                              readonly=True)
     type = fields.Selection(
-        [('customer', 'Customer'), ('supplier', 'Supplier'), ('dropship',
-                                                              'Dropship')])
+        [('customer', 'Customer'), ('supplier', 'Supplier')])
     product_id = fields.Many2one('product.product', string='Product',
                                  readonly=True)
     state = fields.Selection([('draft', 'Draft'), ('to_approve', 'To Approve'),

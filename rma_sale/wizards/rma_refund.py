@@ -6,7 +6,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html)
 from openerp import models, fields, exceptions, api, _
 import openerp.addons.decimal_precision as dp
-from openerp.exceptions import UserError
+from openerp.exceptions import ValidationError
 
 
 class RmaRefund(models.TransientModel):
@@ -19,10 +19,21 @@ class RmaRefund(models.TransientModel):
         return res
 
     @api.model
+    def _get_invoice_line(self, line):
+        if line.sale_line_id and line.sale_line_id.id:
+            invoice_line_ids = [line.sale_line_id.invoice_lines]
+            return invoice_line_ids[-1]
+        else:
+            raise ValidationError('The SO is not invoiced')
+
+    @api.model
     def _get_invoice(self, line):
         if line.sale_line_id and line.sale_line_id.id:
-            invoice_ids = line.sale_line_id.order_id.invoice_ids
-            return invoice_ids.mapped('invoice_ids')
+            invoice_line_ids = [line.sale_line_id.invoice_lines]
+            if len(invoice_line_ids):
+                return invoice_line_ids[-1].invoice_id
+            else:
+                raise ValidationError('The SO is not invoiced')
         return super(RmaRefund, self)._get_invoice(line)
 
 

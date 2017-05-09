@@ -29,6 +29,7 @@
              'views/product_view.xml',
              'views/procurement_view.xml',
              'wizards/rma_make_picking.xml',
+             'wizards/rma_add_invoice.xml',
              'wizards/rma_refund.xml',
              'wizards/stock_config_settings.xml'],
     'installable': True,
