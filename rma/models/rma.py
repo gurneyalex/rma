@@ -90,7 +90,6 @@ class RmaOrder(models.Model):
                 'rma.order.supplier')
         else:
             vals['name'] = self.env['ir.sequence'].next_by_code('rma.order')
-
         return super(RmaOrder, self).create(vals)
 
     @api.one
@@ -144,8 +143,8 @@ class RmaOrder(models.Model):
     @api.one
     def _compute_supplier_line_count(self):
         lines = self.rma_line_ids.filtered(
-            lambda r: r.related_rma_line)
-        related_lines = [line.related_rma_line for line in lines]
+            lambda r: r.children_ids)
+        related_lines = [line.id for line in lines.children_ids]
         self.supplier_line_count = len(related_lines)
 
     @api.one
@@ -329,6 +328,18 @@ class RmaOrder(models.Model):
         return True
 
     @api.model
+    def _get_line_domain(self, rma_id, line):
+        return [('rma_id', '=', rma_id.id),
+             ('type', '=', 'supplier'),
+             ('invoice_line_id', '=', line.invoice_line_id.id)]
+
+    @api.model
+    def _get_existing_lines(self, rma_id, line):
+        domain = self._get_line_domain(rma_id, line)
+        existing_lines = self.env['rma.order.line'].search(domain)
+        return existing_lines
+
+    @api.model
     def _create_supplier_rma(self, origin_rma, lines):
         partners = lines.mapped('partner_address_id')
         for partner in partners:
@@ -348,20 +359,27 @@ class RmaOrder(models.Model):
                 self = self.with_context(supplier=True)
                 rma_id = self.env['rma.order'].create(rma_values)
             else:
-                rma_id = existing_rmas[0]
+                rma_id = existing_rmas[:-1]
             for line in lines.filtered(
                     lambda p: p.partner_address_id == partner):
-                line_values = {'origin': origin_rma.name,
-                               'name': line.name,
-                               'partner_address_id':
-                                   origin_rma.delivery_address_id.id,
-                               'product_id': line.product_id.id,
-                               'related_rma_line': line.id,
-                               'operation_id': line.operation_id.id,
-                               'product_qty': line.product_qty,
-                               'rma_id': rma_id.id}
-                new_line = self.env['rma.order.line'].create(line_values)
-                line.write({'related_rma_line': new_line.id})
+                # existing_lines = self._get_existing_lines(rma_id, line)
+                # if existing_lines:
+                #     continue
+                if line.children_ids and line.children_ids.ids:
+                    for child_id in line.children_ids:
+                        if child_id.parent_id and child_id.parent_id.id:
+                            if child_id.parent_id.id != line.id:
+                                line_values = {
+                                    'origin': origin_rma.name,
+                                    'name': line.name,
+                                    'partner_address_id':
+                                        origin_rma.delivery_address_id.id,
+                                    'product_id': line.product_id.id,
+                                    'parent_id': line.id,
+                                    'operation_id': line.operation_id.id,
+                                    'product_qty': line.product_qty,
+                                    'rma_id': rma_id.id}
+                                self.env['rma.order.line'].create(line_values)
         return True
 
     @api.multi
@@ -374,6 +392,7 @@ class RmaOrder(models.Model):
                 lines = rec.rma_line_ids.filtered(lambda p: p.is_dropship)
                 if lines:
                     self._create_supplier_rma(rec, lines)
+        return True
 
     @api.multi
     def action_rma_done(self):
@@ -409,9 +428,8 @@ class RmaOrder(models.Model):
     def action_view_supplier_lines(self):
         action = self.env.ref('rma.action_rma_supplier_lines')
         result = action.read()[0]
-        lines = self.rma_line_ids.filtered(
-            lambda r: r.related_rma_line)
-        related_lines = [line.related_rma_line.id for line in lines]
+        lines = self.rma_line_ids
+        related_lines = [line.id for line in lines.children_ids]
         # choose the view_mode accordingly
         if len(lines) != 1:
             result['domain'] = "[('id', 'in', " + \
@@ -492,10 +510,12 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
+                 'operation_id.receipt_policy', 'product_qty',
                  'operation_id.delivery_policy', 'type')
     def _compute_qty_to_receive(self):
-        if self.operation_id.receipt_policy == 'no':
+        if self.operation_id.receipt_policy == 'no' or (
+                self.type == 'supplier' and
+                    self.operation_id.is_dropship):
             self.qty_to_receive = 0.0
         elif self.operation_id.receipt_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), True, False)
@@ -511,18 +531,24 @@ class RmaOrderLine(models.Model):
             self.qty_to_receive = 0.0
 
     @api.one
-    @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
+    @api.depends('procurement_ids.state', 'state', 'parent_id',
+                 'operation_id.receipt_policy', 'product_qty',
                  'operation_id.delivery_policy', 'type')
     def _compute_qty_to_deliver(self):
-        if self.operation_id.delivery_policy == 'no':
+        if self.operation_id.delivery_policy == 'no' or (
+                self.type == 'customer' and
+                    self.operation_id.is_dropship):
             self.qty_to_deliver = 0.0
         elif self.operation_id.delivery_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), False, True)
             self.qty_to_deliver = self.product_qty - qty
         elif self.operation_id.delivery_policy == 'received':
             qty = self._get_rma_move_qty(('done'), False, True)
-            self.qty_to_deliver = self.qty_received - qty
+            if self.parent_id and self.parent_id.id:
+                qty_to_deliver = self.parent_id.qty_received - qty
+            else:
+                qty_to_deliver = self.qty_received - qty
+            self.qty_to_deliver = qty_to_deliver
         else:
             self.qty_to_deliver = 0.0
 
@@ -713,9 +739,9 @@ class RmaOrderLine(models.Model):
                                       string='Warranty',
                                       compute=_compute_warranty)
     is_dropship = fields.Boolean(related="operation_id.is_dropship")
-    related_rma_line = fields.Many2one(
+    parent_id = fields.Many2one(
         'rma.order.line', string='Parent RMA line', ondelete='cascade')
-    # rma_ids = fields.One2many('rma.order.line', 'parent_rma')
+    children_ids = fields.One2many('rma.order.line', 'parent_id')
     partner_address_id = fields.Many2one(
         'res.partner', readonly=True,
         states={'draft': [('readonly', False)]},

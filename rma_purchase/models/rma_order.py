@@ -16,12 +16,13 @@ class RmaOrder(models.Model):
     @api.depends('rma_line_ids', 'rma_line_ids.procurement_ids')
     @api.multi
     def _compute_po_line_count(self):
-        purchase_list = []
-        for line in self.rma_line_ids:
-            for procurement_id in line.procurement_ids:
-                if procurement_id.purchase_id and procurement_id.purchase_id.id:
-                    purchase_list.append(procurement_id.purchase_id.id)
-        self.po_line_count = len(list(set(purchase_list)))
+        for rec in self:
+            purchase_list = []
+            for line in rec.rma_line_ids:
+                for procurement_id in line.procurement_ids:
+                    if procurement_id.purchase_id and procurement_id.purchase_id.id:
+                        purchase_list.append(procurement_id.purchase_id.id)
+            rec.po_line_count = len(list(set(purchase_list)))
 
     add_purchase_id = fields.Many2one(comodel_name='purchase.order',
                                       string='Add Purchase Order',
@@ -63,7 +64,7 @@ class RmaOrder(models.Model):
             # if line in self.rma_line_ids.mapped('purchase_order_line_id'):
             #     continue
             data = self._prepare_rma_line_from_po_line(line)
-            new_line = new_lines.new(data)
+            new_line = new_lines.create(data)
             new_lines += new_line
         self.rma_line_ids += new_lines
         self.date_rma = fields.Datetime.now()

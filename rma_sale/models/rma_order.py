@@ -15,6 +15,17 @@ class RmaOrder(models.Model):
                                   ondelete='set null', readonly=True,
                                   states={'draft': [('readonly', False)]})
 
+    @api.model
+    def _get_line_domain(self, rma_id, line):
+        if line.sale_line_id and line.sale_line_id.id:
+            domain = [('rma_id', '=', rma_id.id),
+                      ('type', '=', 'supplier'),
+                      ('sale_line_id', '=', line.sale_line_id.id)]
+        else:
+            domain = super(RmaOrder, self)._get_line_domain(rma_id, line)
+        return domain
+
+
     def _prepare_rma_line_from_sale_order_line(self, line):
         operation = line.product_id.rma_operation_id and \
                     line.product_id.rma_operation_id.id or False
@@ -47,7 +58,7 @@ class RmaOrder(models.Model):
             # if line in self.rma_line_ids.mapped('sale_line_id'):
             #     continue
             data = self._prepare_rma_line_from_sale_order_line(line)
-            new_line = new_lines.new(data)
+            new_line = new_lines.create(data)
             new_lines += new_line
 
         self.rma_line_ids += new_lines

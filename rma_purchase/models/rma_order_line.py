@@ -39,8 +39,7 @@ class RmaOrderLine(models.Model):
                                 string='# of Purchases', copy=False, default=0)
     purchase_order_line_id = fields.Many2one('purchase.order.line',
                                              string='Origin Purchase Line',
-                                             ondelete='set null',
-                                             index=True, readonly=True)
+                                             ondelete='restrict')
     purchase_order_line_ids = fields.Many2many(
         'purchase.order.line', 'purchase_line_rma_line_rel',
         'rma_order_line_id', 'purchase_order_line_id',

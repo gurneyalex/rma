@@ -21,7 +21,7 @@ class RmaRefund(models.TransientModel):
     @api.model
     def _get_invoice(self, line):
         if line.sale_line_id and line.sale_line_id.id:
-            invoice_ids = line.sale_line_id.order_id.invoices_ids
+            invoice_ids = line.sale_line_id.order_id.invoice_ids
             return invoice_ids.mapped('invoice_ids')
         return super(RmaRefund, self)._get_invoice(line)
 

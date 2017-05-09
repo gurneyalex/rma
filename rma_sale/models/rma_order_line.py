@@ -7,7 +7,6 @@
 from openerp import _, api, fields, models
 from openerp.addons import decimal_precision as dp
 
-
 class RmaOrderLine(models.Model):
     _inherit = "rma.order.line"
 
@@ -40,9 +39,9 @@ class RmaOrderLine(models.Model):
 
     sale_line_id = fields.Many2one(comodel_name='sale.order.line',
                                    string='Originating Sales Order Line',
-                                   readonly=True,
-                                   states={'draft': [('readonly', False)]})
-    sale_line_ids = fields.One2many('sale.order.line', 'rma_line_id',
+                                   ondelete='restrict')
+    sale_line_ids = fields.One2many(comodel_name='sale.order.line',
+                                    inverse_name='rma_line_id',
                                     string='Sales Order Lines', readonly=True,
                                     states={'draft': [('readonly', False)]},
                                     copy=False)
@@ -59,7 +58,8 @@ class RmaOrderLine(models.Model):
         store=True)
 
     sales_count = fields.Integer(compute=_compute_sales_count,
-                                string='# of Sales', copy=False, default=0)
+                                 string='# of Sales', copy=False, default=0)
+
     @api.multi
     def action_view_sale_order(self):
         action = self.env.ref('sale.action_quotations')
