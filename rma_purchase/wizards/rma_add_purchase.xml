@@ -6,17 +6,19 @@
         <field name="model">rma_add_purchase</field>
         <field name="arch" type="xml">
             <form string="Select Purchase Order from customer">
-                <separator string="Select Purchase Order from customer"/>
                 <group>
                     <field name="partner_id"
                            domain="[('customer','=',True)]"
                            string="Customer"/>
+                </group>
+                <separator string="Select Purchase Order from customer"/>
+                <group>
                     <field name="purchase_id"
                            domain="[
                            ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
                             context="{'partner_id': partner_id}"/>
                 </group>
-                <separator string="Purchase Order Lines to Add"/>
+                <separator string="Select Purchase Order Lines to Add"/>
                 <field name="purchase_line_ids"
                        domain="[('order_id', '=', purchase_id)]"
                        string="Purchase Order Lines">
@@ -67,7 +69,7 @@
                         string="Add From Purchase Order" class="oe_highlight"
                         type="action"
                         states="draft,to_approve"
-                        style='width:200px ;height:30px;'/>
+                        style='width:200px;height:30px;'/>
             </group>
         </field>
     </record>

@@ -6,17 +6,19 @@
         <field name="model">rma_add_invoice</field>
         <field name="arch" type="xml">
             <form string="Select Invoice from customer">
-                <separator string="Select Invoice from customer"/>
                 <group>
                     <field name="partner_id"
                            domain="[('customer','=',True)]"
                            string="Customer"/>
+                </group>
+                <separator string="Select Invoice from customer"/>
+                <group>
                     <field name="invoice_id"
                            domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),
                            ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
                             context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"/>
                 </group>
-                <separator string="Invoices lines to add"/>
+                <separator string="Select Invoices lines to add"/>
                 <field name="invoice_line_ids"
                        domain="[('invoice_id', '=', invoice_id)]">
                     <tree string="Invoice Lines">
@@ -66,7 +68,7 @@
                         string="Add From Invoice" class="oe_highlight"
                         type="action"
                         states="draft,to_approve"
-                        style='width:200px ;height:30px;'/>
+                        style='width:200px;height:30px;'/>
             </group>
         </field>
     </record>
@@ -80,7 +82,8 @@
                 <button name="%(action_rma_add_invoice)d"
                         string="Add From Invoice" class="oe_highlight"
                         type="action"
-                        states="draft,to_approve"/>
+                        states="draft,to_approve"
+                        style='width:200px;height:30px;'/>
             </group>
         </field>
     </record>

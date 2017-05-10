@@ -11,12 +11,14 @@
                     <field name="partner_id"
                            domain="[('customer','=',True)]"
                            string="Customer"/>
+                </group>
+                <separator string="Select Sale Order Lines to Add"/>
+                <group>
                     <field name="sale_id"
                            domain="[
                            ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
                             context="{'partner_id': partner_id}"/>
                 </group>
-                <separator string="Sale Order Lines to Add"/>
                 <field name="sale_line_ids"
                        domain="[('order_id', '=', sale_id)]"
                        string="Sale Order Lines">

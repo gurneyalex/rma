@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
-    <record id="rma_operation_replace" model="rma.operation">
+<odoo noupdate="0">
+    <record id="rma_operation_customer_replace" model="rma.operation">
         <field name="name">Replace Customer</field>
         <field name="code">RPLC</field>
         <field name="refund_policy">no</field>
         <field name="receipt_policy">ordered</field>
         <field name="delivery_policy">received</field>
         <field name="customer_route_id" ref="rma.route_rma_customer"/>
-        <field name="is_dropship">False</field>
+        <field name="is_dropship" eval="False"/>
     </record>
 
-    <record id="rma_operation_replace" model="rma.operation">
+    <record id="rma_operation_supplier_replace" model="rma.operation">
         <field name="name">Replace Supplier</field>
         <field name="code">RPLS</field>
         <field name="refund_policy">no</field>
         <field name="receipt_policy">ordered</field>
         <field name="delivery_policy">received</field>
         <field name="supplier_route_id" ref="rma.route_rma_supplier"/>
-        <field name="is_dropship">False</field>
+        <field name="is_dropship" eval="False"/>
     </record>
 
-    <record id="rma_operation_refund" model="rma.operation">
+    <record id="rma_operation_customer_refund" model="rma.operation">
         <field name="name">Refund Customer</field>
         <field name="code">RFC</field>
         <field name="refund_policy">ordered</field>
         <field name="receipt_policy">no</field>
         <field name="delivery_policy">no</field>
         <field name="customer_route_id" ref="rma.route_rma_customer"/>
-        <field name="is_dropship">False</field>
+        <field name="is_dropship" eval="False"/>
     </record>
 
-    <record id="rma_operation_refund" model="rma.operation">
+    <record id="rma_operation_supplier_refund" model="rma.operation">
         <field name="name">Refund Supplier</field>
         <field name="code">RFS</field>
         <field name="refund_policy">ordered</field>
         <field name="receipt_policy">no</field>
         <field name="delivery_policy">no</field>
         <field name="supplier_route_id" ref="rma.route_rma_supplier"/>
-        <field name="is_dropship">False</field>
+        <field name="is_dropship" eval="False"/>
     </record>
 
     <record id="rma_operation_ds_replace" model="rma.operation">
@@ -48,10 +48,10 @@
         <field name="delivery_policy">received</field>
         <field name="customer_route_id" ref="rma.route_rma_dropship"/>
         <field name="supplier_route_id" ref="rma.route_rma_dropship"/>
-        <field name="is_dropship">True</field>
+        <field name="is_dropship" eval="True"/>
     </record>
 
-    <record id="rma_operation_ds_replace" model="rma.operation">
+    <record id="rma_operation_ds_refund_replace" model="rma.operation">
         <field name="name">Customer Refund and Supplier Replace</field>
         <field name="code">CRFSRPL</field>
         <field name="refund_policy">received</field>
@@ -59,7 +59,7 @@
         <field name="delivery_policy">received</field>
         <field name="customer_route_id" ref="rma.route_rma_dropship"/>
         <field name="supplier_route_id" ref="rma.route_rma_dropship"/>
-        <field name="is_dropship">True</field>
+        <field name="is_dropship" eval="True"/>
     </record>
 
 </odoo>
