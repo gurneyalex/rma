@@ -353,21 +353,25 @@
                                    string="Rel. RMA Lines"/>
                         </button>
                     </div>
-                    <div class="oe_title">
+                    <div class="oe_title" name="title">
                         <h1>
                             <field name="name"/>
                         </h1>
                     </div>
-                    <group>
+                    <group name="partner">
                         <field name="partner_id"
                                domain="[('customer','=',True)]"
-                               string="Customer"/>
-                        <field name="add_invoice_id"
-                               domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),
-                               ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
-			       attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"
-			       context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"
-			       />
+                               string="Customer"
+                               colspan="4"
+                        />
+                    </group>
+                    <group name="wizard">
+                        <!--<field name="add_invoice_id"-->
+                               <!--domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),-->
+                               <!--('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"-->
+			       <!--attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"-->
+			       <!--context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"-->
+			       <!--/>-->
                     </group>
                     <group>
                         <group col="4">
@@ -487,20 +491,19 @@
                                    string="RMA Lines"/>
                         </button>
                     </div>
-                    <div class="oe_title">
+                    <div class="oe_title" name="title">
                         <h1>
                             <field name="name"/>
                         </h1>
                     </div>
-                    <group>
+                    <group name="partner">
                         <field name="partner_id"
                                domain="[('supplier','=',True)]"
                                string="Supplier"/>
-                        <field name="add_invoice_id"
-                               domain="[('type','=','in_invoice'),'|',('commercial_partner_id','=',partner_id),
-                               ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
-                               attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"/>
                     </group>
+                    <group name="wizard">
+                    </group>
+
                     <group>
                         <group col="4">
                             <field name="assigned_to"

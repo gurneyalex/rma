@@ -2,24 +2,34 @@
 
 <odoo>
     <record id="view_rma_add_invoice" model="ir.ui.view">
-        <field name="name">rma_add_invoice</field>
+        <field name="name">rma.add.invoice</field>
         <field name="model">rma_add_invoice</field>
         <field name="arch" type="xml">
-            <form tring="Select Invoice from customer">
+            <form string="Select Invoice from customer">
                 <separator string="Select Invoice from customer"/>
                 <group>
                     <field name="partner_id"
                            domain="[('customer','=',True)]"
                            string="Customer"/>
-                    <field name="invoice_ids"
+                    <field name="invoice_id"
                            domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),
                            ('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
-                            context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"
-                           widget="many2many_tags"/>
+                            context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"/>
                 </group>
                 <separator string="Invoices lines to add"/>
                 <field name="invoice_line_ids"
-                       domain="[('invoice_id', 'in', invoice_ids.ids)]"/>
+                       domain="[('invoice_id', '=', invoice_id)]">
+                    <tree string="Invoice Lines">
+                        <field name="name"/>
+                        <field name="account_id" groups="account.group_account_user"/>
+                        <field name="quantity"/>
+                        <field name="uom_id" groups="product.group_uom"/>
+                        <field name="price_unit"/>
+                        <field name="discount" groups="sale.group_discount_per_so_line"/>
+                        <field name="price_subtotal"/>
+                        <field name="currency_id" invisible="1"/>
+                    </tree>
+                </field>
                 <footer>
                     <button
                             string="Confirm"
@@ -34,7 +44,7 @@
     </record>
 
     <record id="action_rma_add_invoice" model="ir.actions.act_window">
-        <field name="name">rma_add_invoice</field>
+        <field name="name">Add Invoice</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_add_invoice</field>
         <field name="src_model">rma.order</field>
@@ -51,13 +61,11 @@
         <field name="model">rma.order</field>
         <field name="inherit_id" ref="rma.view_rma_form"/>
         <field name="arch" type="xml">
-            <div name="button_box" position="before">
-                <header>
-                    <button name="%(action_rma_add_invoice)d"
-                            string="Fill RMA lines" class="oe_highlight"
-                            type="action"/>
-                </header>
-            </div>
+            <group name="wizard" position="inside">
+                <button name="%(action_rma_add_invoice)d"
+                        string="Add Invoice" class="oe_highlight"
+                        type="action"/>
+            </group>
         </field>
     </record>
 
@@ -66,13 +74,11 @@
         <field name="model">rma.order</field>
         <field name="inherit_id" ref="rma.view_rma_supplier_form"/>
         <field name="arch" type="xml">
-            <div name="button_box" position="before">
-                <header>
-                    <button name="%(action_rma_add_invoice)d"
-                            string="Fill RMA lines" class="oe_highlight"
-                            type="action"/>
-                </header>
-            </div>
+            <group name="wizard" position="inside">
+                <button name="%(action_rma_add_invoice)d"
+                        string="Add Invoice" class="oe_highlight"
+                        type="action"/>
+            </group>
         </field>
     </record>
 

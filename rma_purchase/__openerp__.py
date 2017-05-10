@@ -16,7 +16,8 @@
     'website': 'http://www.github.com/OCA/rma',
     'depends': ['rma', 'purchase'],
     'data': ['views/rma_order_view.xml',
-             'views/rma_order_line_view.xml'],
+             'views/rma_order_line_view.xml',
+             'wizards/rma_add_purchase.xml'],
     'installable': True,
     'auto_install': False,
 }

@@ -7,14 +7,8 @@
             <field name="model">rma.order</field>
             <field name="inherit_id" ref="rma.view_rma_supplier_form"/>
             <field name="arch" type="xml">
-                <field name="add_invoice_id" position="after">
-                    <field name="add_purchase_id"
-                           domain="[('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"
-                           attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"
-                           context="{'partner_id': partner_id}"/>
-                </field>
                 <div name='button_box' position="inside">
-                    <button type="object"  name="action_view_purchase_order"
+                    <button type="object" name="action_view_purchase_order"
                             class="oe_stat_button"
                             icon="fa-shopping-cart"
                             groups="purchase.group_purchase_user">

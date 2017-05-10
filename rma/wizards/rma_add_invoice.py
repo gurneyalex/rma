@@ -29,7 +29,7 @@ class RmaAddinvoice(models.TransientModel):
         rma = rma_obj.browse(rma_id)
         res['rma_id'] = rma.id
         res['partner_id'] = rma.partner_id.id
-        res['invoice_ids'] = False
+        res['invoice_id'] = False
         res['invoice_line_ids'] = False
         return res
 
@@ -38,11 +38,9 @@ class RmaAddinvoice(models.TransientModel):
                               readonly=True,
                               ondelete='cascade')
 
-    partner_id = fields.Many2one('res.partner', string='Partner')
-    invoice_ids = fields.Many2many('account.invoice',
-                                   'rma_add_invoice_rel',
-                                   'invoice_id', 'rma_add_invoice_id',
-                                   string='Invoices')
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner')
+    invoice_id = fields.Many2one(comodel_name='account.invoice',
+                                 string='Invoice')
     invoice_line_ids = fields.Many2many('account.invoice.line',
                                      'rma_add_invoice_add_line_rel',
                                      'invoice_line_id', 'rma_add_invoice_id',
@@ -69,25 +67,33 @@ class RmaAddinvoice(models.TransientModel):
         }
         return data
 
+    @api.model
     def _get_rma_data(self):
         data = {
             'date_rma': fields.Datetime.now(),
-            'delivery_address_id': self.invoice_ids[0].partner_id.id,
-            'invoice_address_id': self.invoice_ids[0].partner_id.id
+            'delivery_address_id': self.invoice_id.partner_id.id,
+            'invoice_address_id': self.invoice_id.partner_id.id
         }
         return data
 
+    @api.model
+    def _get_existing_invoice_lines(self):
+        existing_invoice_lines = []
+        for rma_line in self.rma_id.rma_line_ids:
+            existing_invoice_lines.append(rma_line.invoice_line_id)
+        return existing_invoice_lines
+
     @api.multi
     def add_lines(self):
-        new_lines = self.env['rma.order.line']
+        rma_line_obj = self.env['rma.order.line']
+        existing_invoice_lines = self._get_existing_invoice_lines()
         for line in self.invoice_line_ids:
             # Load a PO line only once
-            if line in self.invoice_line_ids:
-                continue
-            data = self._prepare_rma_line_from_inv_line(line)
-            new_lines.create(data)
+            if line not in existing_invoice_lines:
+                data = self._prepare_rma_line_from_inv_line(line)
+                rma_line_obj.create(data)
         rma = self.rma_id
         data_rma = self._get_rma_data()
         rma.write(data_rma)
-        self.cr.commit()
+        self.env.cr.commit()
         return {'type': 'ir.actions.act_window_close'}

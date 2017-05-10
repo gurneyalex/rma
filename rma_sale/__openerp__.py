@@ -16,9 +16,9 @@
     'website': 'http://www.github.com/OCA/rma',
     'depends': ['rma', 'sale_stock'],
     'data': ['views/rma_order_line_view.xml',
-             'views/rma_order_view.xml',
              'views/rma_operation_view.xml',
-             'wizards/rma_order_line_make_sale_order_view.xml'],
+             'wizards/rma_order_line_make_sale_order_view.xml',
+             'wizards/rma_add_sale.xml'],
     'installable': True,
     'auto_install': True,
 }
