@@ -48,7 +48,9 @@
         <field name="arch" type="xml">
             <data>
                 <field name="name" position="after">
-                    <field name="rma_line_id"/>
+                    <field name="rma_count" invisible="1"/>
+                    <field name="rma_line_id"
+                           string="RMA originated"/>
                     <notebook attrs="{'invisible': [('rma_count', '=', 0)]}">
                         <page string="RMA Lines">
                             <field name="rma_line_ids"/>

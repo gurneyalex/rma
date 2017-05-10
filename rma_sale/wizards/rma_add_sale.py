@@ -38,7 +38,8 @@ class RmaAddSale(models.TransientModel):
                               readonly=True,
                               ondelete='cascade')
 
-    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner')
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
+                                 readonly=True)
     sale_id = fields.Many2one(comodel_name='sale.order', string='Order')
     sale_line_ids = fields.Many2many('sale.order.line',
                                      'rma_add_sale_add_line_rel',

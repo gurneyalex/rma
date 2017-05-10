@@ -38,7 +38,8 @@ class RmaAddPurchase(models.TransientModel):
                               readonly=True,
                               ondelete='cascade')
 
-    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner')
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
+                                 readonly=True)
     purchase_id = fields.Many2one(comodel_name='purchase.order', string='Order')
     purchase_line_ids = fields.Many2many('purchase.order.line',
                                      'rma_add_purchase_add_line_rel',

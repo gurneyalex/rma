@@ -72,15 +72,15 @@
             </field>
     </record>
 
-        <!--<record model="ir.values" id="values_action_rma_refund">-->
-            <!--<field name="model_id" ref="model_rma_order_line"/>-->
-            <!--<field name="name">Create Refund</field>-->
-            <!--<field name="key2">client_action_multi</field>-->
-            <!--<field name="value"-->
-                   <!--eval="'ir.actions.act_window,' + str(ref('action_rma_refund'))" />-->
-            <!--<field name="key">action</field>-->
-            <!--<field name="model">rma.order.line</field>-->
-        <!--</record>-->
+    <record model="ir.values" id="values_action_rma_refund">
+        <field name="model_id" ref="model_rma_order_line"/>
+        <field name="name">Create Refund</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value"
+               eval="'ir.actions.act_window,' + str(ref('action_rma_refund'))" />
+        <field name="key">action</field>
+        <field name="model">rma.order.line</field>
+    </record>
 
     </data>
 </openerp>

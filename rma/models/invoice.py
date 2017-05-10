@@ -67,6 +67,17 @@ class AccountInvoiceLine(models.Model):
 
     _inherit = "account.invoice.line"
 
+    @api.multi
+    def _compute_rma_count(self):
+        rma_list = []
+        for invl in self:
+            for rmal in invl.rma_line_ids:
+                rma_list.append(rmal.rma_id.id)
+        self.rma_count = len(list(set(rma_list)))
+
+    rma_count = fields.Integer(compute=_compute_rma_count,
+                               string='# of RMA',
+                               copy=False)
     rma_line_ids = fields.One2many(
         comodel_name='rma.order.line', inverse_name='invoice_line_id',
         string="RMA", readonly=True,

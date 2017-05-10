@@ -366,12 +366,6 @@
                         />
                     </group>
                     <group name="wizard">
-                        <!--<field name="add_invoice_id"-->
-                               <!--domain="[('type','=','out_invoice'),'|',('commercial_partner_id','=',partner_id),-->
-                               <!--('partner_id','=',partner_id), (('state','not in',['draft','cancel']))]"-->
-			       <!--attrs="{'invisible':[('state','not in',['draft','to_approve'])]}"-->
-			       <!--context="{'form_view_ref':'account.invoice_form','partner_id': partner_id}"-->
-			       <!--/>-->
                     </group>
                     <group>
                         <group col="4">
@@ -732,37 +726,44 @@
             <field name="act_window_id" ref="action_rma_supplier_lines"/>
         </record>
 
-        <menuitem id="menu_rma"
-            name="RMA"
+        <menuitem id="menu_customer_rma"
+            name="Customer RMA"
             groups="rma.group_rma_customer_user,rma.group_rma_supplier_user"
             sequence="30"
+            parent="stock.menu_stock_root"/>
+
+        <menuitem id="menu_supplier_rma"
+            name="Supplier RMA"
+            groups="rma.group_rma_customer_user,rma.group_rma_supplier_user"
+            sequence="31"
             parent="stock.menu_stock_root"/>
 
         <menuitem
             id="menu_rma_act_customer"
             sequence="10"
-            parent="menu_rma"
+            parent="menu_customer_rma"
             groups="rma.group_rma_customer_user"
             action="action_rma_customer"/>
+
         <menuitem
             id="menu_rma_act_supplier"
-            sequence="20"
-            parent="menu_rma"
+            sequence="10"
+            parent="menu_supplier_rma"
             groups="rma.group_rma_supplier_user"
             action="action_rma_supplier"/>
 
         <menuitem
             id="menu_rma_line_customer"
-            sequence="40"
-            parent="menu_rma"
+            sequence="20"
+            parent="menu_customer_rma"
             groups="rma.group_rma_customer_user"
             action="action_rma_customer_lines"
             />
 
         <menuitem
             id="menu_rma_line_supplier"
-            sequence="50"
-            parent="menu_rma"
+            sequence="20"
+            parent="menu_supplier_rma"
             groups="rma.group_rma_supplier_user"
             action="action_rma_supplier_lines"
             />

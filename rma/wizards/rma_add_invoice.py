@@ -38,7 +38,8 @@ class RmaAddinvoice(models.TransientModel):
                               readonly=True,
                               ondelete='cascade')
 
-    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner')
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
+                                 readonly=True)
     invoice_id = fields.Many2one(comodel_name='account.invoice',
                                  string='Invoice')
     invoice_line_ids = fields.Many2many('account.invoice.line',

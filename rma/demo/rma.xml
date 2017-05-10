@@ -42,7 +42,7 @@
 
     <record id="rma_operation_ds_replace" model="rma.operation">
         <field name="name">Replace dropship in both sides</field>
-        <field name="code">DSRPL</field>
+        <field name="code">DSRPLB</field>
         <field name="refund_policy">no</field>
         <field name="receipt_policy">ordered</field>
         <field name="delivery_policy">received</field>
@@ -53,7 +53,7 @@
 
     <record id="rma_operation_ds_replace" model="rma.operation">
         <field name="name">Customer Refund and Supplier Replace</field>
-        <field name="code">DSRPL</field>
+        <field name="code">CRFSRPL</field>
         <field name="refund_policy">received</field>
         <field name="receipt_policy">ordered</field>
         <field name="delivery_policy">received</field>

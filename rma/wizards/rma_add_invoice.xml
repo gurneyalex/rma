@@ -63,8 +63,10 @@
         <field name="arch" type="xml">
             <group name="wizard" position="inside">
                 <button name="%(action_rma_add_invoice)d"
-                        string="Add Invoice" class="oe_highlight"
-                        type="action"/>
+                        string="Add From Invoice" class="oe_highlight"
+                        type="action"
+                        states="draft,to_approve"
+                        style='width:200px ;height:30px;'/>
             </group>
         </field>
     </record>
@@ -76,8 +78,9 @@
         <field name="arch" type="xml">
             <group name="wizard" position="inside">
                 <button name="%(action_rma_add_invoice)d"
-                        string="Add Invoice" class="oe_highlight"
-                        type="action"/>
+                        string="Add From Invoice" class="oe_highlight"
+                        type="action"
+                        states="draft,to_approve"/>
             </group>
         </field>
     </record>

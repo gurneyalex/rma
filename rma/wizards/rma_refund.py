@@ -6,7 +6,6 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html)
 from openerp import models, fields, exceptions, api, _
 import openerp.addons.decimal_precision as dp
-from openerp.exceptions import UserError
 
 
 class RmaRefund(models.TransientModel):
@@ -66,42 +65,19 @@ class RmaRefund(models.TransientModel):
         'rma.refund.item',
         'wiz_id', string='Items')
 
-    @api.model
-    def _get_invoice(self, line):
-        return line.invoice_line_id.invoice_id
-
     @api.multi
-    def compute_refund(self, mode='refund'):
-        for form in self:
-            date = form.date or False
-            description = form.description
-            if len(self.item_ids) > 0:
-                line = self.item_ids[0].line_id
-                template = self._get_invoice(line)
-            else:
-                raise UserError(_('Nothing to refund'))
-            values = self._prepare_refund(template, date_invoice=template.date,
-                                          date=date, description=description,
-                                          journal_id=template.journal_id.id,
-                                          line=self.item_ids[0].line_id)
+    def compute_refund(self):
+        for wizard in self:
+            values = self._prepare_refund(wizard, self.item_ids[0].rma_id)
             new_refund = self.env['account.invoice'].create(values)
             for item in self.item_ids:
                 line = item.line_id
-                inv = self._get_invoice(line)
-                if inv.state in ['draft', 'proforma2', 'cancel']:
-                    raise UserError(_('Cannot refund draft/proforma/cancelled'
-                                      ' invoice.'))
-                if inv.reconciled and mode in ('cancel', 'modify'):
-                    raise UserError(_('Cannot refund invoice which is already'
-                                      ' reconciled, invoice should be'
-                                      ' unreconciled first. You can only '
-                                      'refund this invoice.'))
-                refund_line_values = self.prepare_refund_line(item, new_refund)
+                refund_line_values = self.prepare_refund_line(line, new_refund)
                 self.env['account.invoice.line'].create(
                     refund_line_values)
             # Put the reason in the chatter
             subject = _("Invoice refund")
-            body = description
+            body = self.item_ids[0].rma_id.name
             new_refund.message_post(body=body, subject=subject)
             return new_refund
 
@@ -127,70 +103,70 @@ class RmaRefund(models.TransientModel):
         result['domain'] = invoice_domain
         return result
 
-    @api.model
-    def _get_invoice_line(self, line):
-        return line.invoice_line_id
+    # @api.model
+    # def _get_invoice_line(self, line):
+    #     if line.invoice_line_id and line.invoice_line_id.id:
+    #         return line.invoice_line_id
+    #     return False
+
+    # @api.model
+    # def _get_invoice(self, order):
+    #     invoices = ""
+    #     invoice_list = []
+    #     for line in order.rma_line_ids:
+    #         invoice_list.append(line.invoice_id.id)
+    #     invoice_ids = list(set(invoice_list))
+    #     for inv in invoice_ids:
+    #         invoices += inv.number
+    #     return invoices
 
     @api.model
     def prepare_refund_line(self, item, refund):
-        values = {}
-        line = item.line_id
-        inv_line = self._get_invoice_line(line)
-        for name, field in inv_line._fields.iteritems():
-            if name in ('id', 'create_uid', 'create_date', 'write_uid',
-                        'write_date'):
-                continue
-            elif field.type == 'many2one':
-                values[name] = inv_line[name].id
-            elif name == 'origin':
-                values[name] = line.rma_id.name
-            elif field.type not in ['many2many', 'one2many']:
-                values[name] = inv_line[name]
-            if name == 'rma_line_id':
-                values[name] = line.id
-            if name == 'quantity':
-                values[name] = item.qty_to_refund
-            if name == 'invoice_id':
-                values[name] = refund.id
+        values = {
+            'name': item.rma_id.name,
+            'origin': item.rma_id.name,
+            'account_id': refund.account_id.id,
+            'price_unit': item.price_unit,
+            'uom_id': item.uom_id.id,
+            'product_id': item.product_id.id,
+            'rma_line_id': item.id,
+            'quantity': item.qty_to_refund,
+            'invoice_id': refund.id
+        }
         return values
 
     @api.model
-    def _prepare_refund(self, invoice_template, date_invoice=None, date=None,
-                        description=None, journal_id=None, line=None):
-        values = {}
-        for field in ['name', 'comment', 'date_due', 'company_id',
-                      'account_id', 'currency_id', 'payment_term_id',
-                      'user_id', 'fiscal_position_id']:
-            if invoice_template._fields[field].type == 'many2one':
-                values[field] = invoice_template[field].id
-            else:
-                values[field] = invoice_template[field] or False
-
-            if len(line.rma_id.delivery_address_id):
-                values['partner_id'] = line.rma_id.invoice_address_id.id
-            else:
-                values['partner_id'] = line.rma_id.partner_id.id
-        if journal_id:
-            journal = self.env['account.journal'].browse(journal_id)
-        elif invoice_template['type'] == 'in_invoice':
-            journal = self.env['account.journal'].search(
-                [('type', '=', 'purchase')], limit=1)
+    def _prepare_refund(self, wizard, order):
+        # origin_invoices = self._get_invoice(order)
+        values = {
+            'name': order.name,
+            'origin': order.name,
+            'reference': False,
+            'account_id': order.partner_id.property_account_receivable_id.id,
+            'partner_id': order.partner_id.id,
+            'currency_id': order.partner_id.company_id.currency_id.id,
+            'payment_term_id': False,
+            'fiscal_position_id':
+                order.partner_id.property_account_position_id.id,
+        }
+        team_ids = self.env['crm.team'].search(
+            ['|', ('user_id', '=', self.env.uid),
+             ('member_ids', '=', self.env.uid)], limit=1)
+        team_id = team_ids[0] if team_ids else False
+        if team_id:
+            values['team_id'] = team_id.id
+        if len(order.delivery_address_id):
+            values['partner_id'] = order.invoice_address_id.id
         else:
-            journal = self.env['account.journal'].search(
-                [('type', '=', 'sale')], limit=1)
-        values['journal_id'] = journal.id
-        if invoice_template['type'] == 'out_invoice':
+            values['partner_id'] = order.partner_id.id
+        if order.type == 'customer':
             values['type'] = 'out_refund'
         else:
             values['type'] = 'in_refund'
-        values['date_invoice'] = date_invoice
         values['state'] = 'draft'
         values['number'] = False
-
-        if date:
-            values['date'] = date
-        if description:
-            values['name'] = description
+        values['date'] = wizard.date_invoice
+        values['date_invoice'] = wizard.date or wizard.date_invoice
         return values
 
 

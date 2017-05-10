@@ -54,7 +54,6 @@ class RmaOrder(models.Model):
         "deliver repaired or replacement products.")
     invoice_address_id = fields.Many2one(
         'res.partner', readonly=True,
-        required=True,
         states={'draft': [('readonly', False)]},
         string='Partner invoice address',
         help="Invoice address for current rma order.")
