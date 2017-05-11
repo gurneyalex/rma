@@ -23,8 +23,6 @@ class RmaMakePicking(models.TransientModel):
             route = line.operation_id.customer_route_id.id
         elif line.type == 'supplier':
             route = line.operation_id.supplier_route_id.id
-        elif line.type == 'dropship':
-            route = line.operation_id.route_dropship.id
         if not route:
             raise ValidationError(_('No route define for this '
                                   'operation'))
@@ -44,6 +42,7 @@ class RmaMakePicking(models.TransientModel):
                   'is_dropship': line.is_dropship,
                   'qty_to_deliver': line.qty_to_deliver,
                   'line_id': line.id,
+                  'rma_id': line.rma_id.id,
                   'wiz_id': self.env.context['active_id']}
         return values
 

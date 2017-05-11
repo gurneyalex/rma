@@ -28,6 +28,7 @@ class RmaRefund(models.TransientModel):
                   'uom_id': line.uom_id.id,
                   'qty_to_refund': line.qty_to_refund,
                   'line_id': line.id,
+                  'rma_id': line.rma_id.id,
                   'wiz_id': self.env.context['active_id']}
         return values
 
@@ -106,23 +107,6 @@ class RmaRefund(models.TransientModel):
         invoice_domain.append(('id', '=', new_invoice.id))
         result['domain'] = invoice_domain
         return result
-
-    # @api.model
-    # def _get_invoice_line(self, line):
-    #     if line.invoice_line_id and line.invoice_line_id.id:
-    #         return line.invoice_line_id
-    #     return False
-
-    # @api.model
-    # def _get_invoice(self, order):
-    #     invoices = ""
-    #     invoice_list = []
-    #     for line in order.rma_line_ids:
-    #         invoice_list.append(line.invoice_id.id)
-    #     invoice_ids = list(set(invoice_list))
-    #     for inv in invoice_ids:
-    #         invoices += inv.number
-    #     return invoices
 
     @api.model
     def prepare_refund_line(self, item, refund):

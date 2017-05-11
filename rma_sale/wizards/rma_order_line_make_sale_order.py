@@ -29,6 +29,7 @@ class RmaLineMakeSaleOrder(models.TransientModel):
             'product_id': line.product_id.id,
             'name': line.name or line.product_id.name,
             'product_qty': line.qty_to_sell,
+            'rma_id': line.rma_id.id,
             'product_uom_id': line.uom_id.id,
         }
 
@@ -42,8 +43,7 @@ class RmaLineMakeSaleOrder(models.TransientModel):
 
         if not rma_line_ids:
             return res
-        assert active_model == 'rma.order.line', \
-            'Bad context propagation'
+        assert active_model == 'rma.order.line', 'Bad context propagation'
 
         items = []
         lines = rma_line_obj.browse(rma_line_ids)
@@ -138,10 +138,12 @@ class RmaLineMakeSaleOrderItem(models.TransientModel):
                               required=True)
     rma_id = fields.Many2one('rma.order', related='line_id.rma_id',
                              string='RMA Order', readonly=True)
-    product_id = fields.Many2one('product.product', string='Product')
-    name = fields.Char(string='Description', required=True)
+    product_id = fields.Many2one('product.product', string='Product',
+                                 readonly=True)
+    name = fields.Char(string='Description', required=True, readonly=True)
     product_qty = fields.Float(string='Quantity to sell',
-                               digits=dp.get_precision('Product UoS'))
+                               digits=dp.get_precision('Product UoS'),
+                               readonly=True)
     product_uom_id = fields.Many2one('product.uom', string='UoM',
                                      readonly=True)
     free_of_charge = fields.Boolean('Free of Charge')
