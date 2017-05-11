@@ -52,6 +52,10 @@ class RmaLineMakeSaleOrder(models.TransientModel):
         customers = lines.mapped('partner_id')
         if len(customers) == 1:
             res['partner_id'] = customers.id
+        else:
+            raise exceptions.Warning(
+                _('Only RMA lines from the same partner can be processed at '
+                  'the same time'))
         res['item_ids'] = items
         return res
 

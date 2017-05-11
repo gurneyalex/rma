@@ -30,5 +30,30 @@
             </field>
         </record>
 
+    <record id="view_rma_line_button_sale_form" model="ir.ui.view">
+        <field name="name">rma.order.line.form</field>
+        <field name="model">rma.order.line</field>
+        <field name="inherit_id" ref="rma.view_rma_line_button_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="%(action_rma_add_sale)d" states="approved"
+                        string="Create Sale Quotation" class="oe_highlight"
+                        type="action"/>
+            </header>
+        </field>
+    </record>
+    <record id="view_rma_line_supplier_button_sale_form" model="ir.ui.view">
+        <field name="name">rma.order.line.supplier.form</field>
+        <field name="model">rma.order.line</field>
+        <field name="inherit_id" ref="rma.view_rma_line_supplier_button_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="%(action_rma_add_sale)d" states="approved"
+                        string="Create Sale Quotation" class="oe_highlight"
+                        type="action"/>
+            </header>
+        </field>
+    </record>
+
     </data>
 </odoo>
