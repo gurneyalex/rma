@@ -65,6 +65,10 @@ class RmaMakePicking(models.TransientModel):
 
         items = []
         lines = rma_line_obj.browse(rma_line_ids)
+        if len(lines.mapped('partner_id')) > 1:
+            raise exceptions.Warning(
+                _('Only RMA lines from the same partner can be processed at '
+                  'the same time'))
         for line in lines:
             items.append([0, 0, self._prepare_item(line)])
         res['item_ids'] = items
@@ -86,8 +90,10 @@ class RmaMakePicking(models.TransientModel):
         return group_data
 
     @api.model
-    def _get_address(self, line, picking_type):
-        if line.is_dropship and picking_type == 'outgoing':
+    def _get_address(self, line, picking_type, location):
+        if location == line.rma_id.warehouse_id.lot_rma_id:
+            delivery_address = line.rma_id.warehouse_id.partner_id
+        elif line.is_dropship and picking_type == 'outgoing':
             delivery_address = line.partner_address_id.id
         else:
             if line.rma_id.delivery_address_id:
@@ -125,7 +131,7 @@ class RmaMakePicking(models.TransientModel):
                 else:
                     location = self.env.ref('stock.stock_location_suppliers')
         warehouse = line.rma_id.warehouse_id
-        delivery_address = self._get_address(line, picking_type)
+        delivery_address = self._get_address(line, picking_type, location)
 
         procurement_data = {
             'name': line.operation_id.name,

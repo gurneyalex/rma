@@ -40,9 +40,7 @@ class RmaOrder(models.Model):
         [('customer', 'Customer'), ('supplier', 'Supplier')],
         string="Type", required=True, default=_get_default_type, readonly=True)
     reference = fields.Char(string='Reference',
-                            help="The partner reference of this RMA order.",
-                            readonly=True,
-                            states={'draft': [('readonly', False)]})
+                            help="The partner reference of this RMA order.")
 
     comment = fields.Text('Additional Information', readonly=True, states={
         'draft': [('readonly', False)]})
@@ -689,8 +687,7 @@ class RmaOrderLine(models.Model):
                               "this rma.")
     state = fields.Selection(related='rma_id.state')
     operation_id = fields.Many2one(
-        comodel_name="rma.operation", string="Operation", readonly=True,
-        required=True, index=True, states={'draft': [('readonly', False)]})
+        comodel_name="rma.operation", string="Operation")
 
     invoice_line_id = fields.Many2one('account.invoice.line',
                                       string='Invoice Line',

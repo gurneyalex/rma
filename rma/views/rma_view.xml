@@ -9,7 +9,8 @@
                       decoration-muted="state in ('draft','to_approve')"
                       create="false">
                     <field name="rma_id"/>
-                    <field name="state"/>
+                    <field name="state" invisible="1"/>
+                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="name"/>
                     <field name="origin"/>
@@ -31,7 +32,8 @@
                       decoration-muted="state in ('draft','to_approve')"
                       create="false">
                     <field name="rma_id"/>
-                    <field name="state"/>
+                    <field name="state" invisible="1"/>
+                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="name"/>
                     <field name="origin"/>
@@ -301,11 +303,11 @@
                             groups="rma.group_rma_customer_user,group_rma_supplier_user"/>
                     <button name="action_rma_approve" type="object"
                             string="Approve"
-                            attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_manager"/>
+                            attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_customer_user"/>
                     <button name="action_rma_done" type="object"
                             string="Done"
                             attrs="{'invisible':[('state', 'in', ('done', 'draft'))]}"
-                            groups="rma.group_rma_manager"/>
+                            groups="rma.group_rma_customer_user"/>
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>
                 <sheet string="RMA">
@@ -440,7 +442,7 @@
                             groups="rma.group_rma_supplier_user"/>
                     <button name="action_rma_approve" type="object"
                             string="Approve"
-                            attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_manager"/>
+                            attrs="{'invisible':[('state', '!=', 'to_approve')]}" class="oe_highlight" groups="rma.group_rma_supplier_user"/>
                     <button name="action_rma_done" type="object"
                             string="Done"
                             attrs="{'invisible':[('state', 'in', ('done', 'draft'))]}"
@@ -566,8 +568,13 @@
                     <separator/>
                     <filter domain="[('assigned_to','=',uid)]" help="My RMAs"/>
                     <group expand="0" string="Group By">
-                        <filter name="type" string="Type" domain="[]"
-                                context="{'group_by':'type'}"/>
+                        <filter name="partner" string="Partner" domain="[]"
+                                context="{'group_by':'partner_id'}"/>
+                        <filter name="operation" string="Operation" domain="[]"
+                                context="{'group_by':'operation_id'}"/>
+                        <filter name="product" string="Product" domain="[]"
+                                context="{'group_by':'product_id'}"/>
+
                     </group>
                </search>
             </field>
@@ -586,8 +593,8 @@
                     <separator/>
                     <filter domain="[('assigned_to','=',uid)]" help="My RMAs"/>
                     <group expand="0" string="Group By">
-                        <filter name="type" string="Type" domain="[]"
-                                context="{'group_by':'type'}"/>
+                        <filter name="partner" string="Partner" domain="[]"
+                                context="{'group_by':'partner_id'}"/>
                         <filter name="rma_date" string="RMA Date" domain="[]"
                                 context="{'group_by':'rma_date'}"/>
                     </group>

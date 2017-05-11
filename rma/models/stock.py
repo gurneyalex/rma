@@ -32,7 +32,7 @@ class StockMove(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals['procurement_id']:
+        if vals.get('procurement_id', False):
             procurement = self.env['procurement.order'].browse(
                 vals['procurement_id'])
             if procurement.rma_line_id and procurement.rma_line_id.id:

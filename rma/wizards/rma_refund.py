@@ -50,6 +50,10 @@ class RmaRefund(models.TransientModel):
 
         items = []
         lines = rma_line_obj.browse(rma_line_ids)
+        if len(lines.mapped('partner_id')) > 1:
+            raise exceptions.Warning(
+                _('Only RMA lines from the same partner can be processed at '
+                  'the same time'))
         for line in lines:
             items.append([0, 0, self._prepare_item(line)])
         res['item_ids'] = items
