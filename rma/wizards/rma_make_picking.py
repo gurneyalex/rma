@@ -91,7 +91,7 @@ class RmaMakePicking(models.TransientModel):
     @api.model
     def _get_address(self, line, picking_type, location):
         if location == line.rma_id.warehouse_id.lot_rma_id:
-            delivery_address = line.rma_id.warehouse_id.partner_id
+            delivery_address = line.rma_id.warehouse_id.partner_id.id
         elif line.is_dropship and picking_type == 'outgoing':
             delivery_address = line.partner_address_id.id
         else:
