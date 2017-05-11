@@ -26,6 +26,12 @@ class RmaOrder(models.Model):
         return warehouse_ids
 
     @api.model
+    def _default_rule_id(self):
+        if self.company_id and self.company_id.id:
+            if self.company_id.rma_rule_id and self.company_id.rma_rule_id.id:
+                return self.company_id.rma_rule_id.id
+
+    @api.model
     def _get_default_type(self):
         if 'supplier' in self.env.context:
             return "supplier"
@@ -61,7 +67,7 @@ class RmaOrder(models.Model):
     state = fields.Selection([('draft', 'Draft'), ('to_approve', 'To Approve'),
                               ('approved', 'Approved'),
                               ('done', 'Done')], string='State', index=True,
-                             default='draft')
+                              default='draft')
     date_rma = fields.Datetime(string='Order Date', index=True, copy=False)
     partner_id = fields.Many2one('res.partner', string='Partner',
                                  required=True, readonly=True,
@@ -73,6 +79,8 @@ class RmaOrder(models.Model):
                                    default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id)
+    rule_id = fields.Many2one('res.company', string='Company',
+                              default=_default_rule_id)
     rma_line_ids = fields.One2many('rma.order.line', 'rma_id',
                                    string='RMA lines')
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
@@ -314,6 +322,9 @@ class RmaOrder(models.Model):
     @api.multi
     def action_rma_to_approve(self):
         for rec in self:
+            if rec.rule_id and rec.rule_id.id:
+                if rec.rule_id.approval_policy == 'always':
+                    rec.state = 'approved'
             rec.state = 'to_approve'
         return True
 

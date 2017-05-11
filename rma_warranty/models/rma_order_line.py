@@ -5,13 +5,6 @@
 # © 2009-2013 Akretion,
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html)
 from openerp import _, api, fields, models
-from openerp.addons import decimal_precision as dp
-from openerp.exceptions import UserError
-from dateutil.relativedelta import relativedelta
-from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
-import math
-from datetime import datetime
-import calendar
 
 
 class RmaOrderLine(models.Model):
