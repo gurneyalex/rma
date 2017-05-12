@@ -36,7 +36,8 @@ class RmaOrderLine(models.Model):
         self.qty_purchased = self._get_rma_purchased_qty()
 
     purchase_count = fields.Integer(compute=_compute_purchase_count,
-                                string='# of Purchases', copy=False, default=0)
+                                    string='# of Purchases', copy=False,
+                                    default=0)
     purchase_order_line_id = fields.Many2one('purchase.order.line',
                                              string='Origin Purchase Line',
                                              ondelete='restrict')
