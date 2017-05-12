@@ -180,7 +180,7 @@
                                 icon="fa-warning"
                                 groups="stock.group_stock_user">
                             <field name="procurement_count" widget="statinfo"
-                                   string="Procurements"/>
+                                   string="Exceptions"/>
                         </button>
                     </div>
                     <group>
