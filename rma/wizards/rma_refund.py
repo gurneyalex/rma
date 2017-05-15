@@ -76,8 +76,7 @@ class RmaRefund(models.TransientModel):
             values = self._prepare_refund(wizard, self.item_ids[0].rma_id)
             new_refund = self.env['account.invoice'].create(values)
             for item in self.item_ids:
-                line = item.line_id
-                refund_line_values = self.prepare_refund_line(line, new_refund)
+                refund_line_values = self.prepare_refund_line(item, new_refund)
                 self.env['account.invoice.line'].create(
                     refund_line_values)
             # Put the reason in the chatter
@@ -110,14 +109,19 @@ class RmaRefund(models.TransientModel):
 
     @api.model
     def prepare_refund_line(self, item, refund):
+        accounts = item.product_id.product_tmpl_id._get_product_accounts()
+        if item.line_id.type == 'customer':
+            account = accounts['stock_output']
+        else:
+            account = accounts['stock_input']
         values = {
             'name': item.rma_id.name,
             'origin': item.rma_id.name,
-            'account_id': refund.account_id.id,
-            'price_unit': item.price_unit,
-            'uom_id': item.uom_id.id,
+            'account_id': account.id,
+            'price_unit': item.line_id.price_unit,
+            'uom_id': item.line_id.uom_id.id,
             'product_id': item.product_id.id,
-            'rma_line_id': item.id,
+            'rma_line_id': item.line_id.id,
             'quantity': item.qty_to_refund,
             'invoice_id': refund.id
         }
@@ -126,11 +130,18 @@ class RmaRefund(models.TransientModel):
     @api.model
     def _prepare_refund(self, wizard, order):
         # origin_invoices = self._get_invoice(order)
+        if order.type == 'customer':
+            journal = self.env['account.journal'].search(
+                [('type', '=', 'sale')], limit=1)
+        else:
+            journal = self.env['account.journal'].search(
+                [('type', '=', 'purchase')], limit=1)
         values = {
             'name': order.name,
             'origin': order.name,
             'reference': False,
-            'account_id': order.partner_id.property_account_receivable_id.id,
+            # 'account_id': account.id,
+            'journal_id': journal.id,
             'partner_id': order.partner_id.id,
             'currency_id': order.partner_id.company_id.currency_id.id,
             'payment_term_id': False,
