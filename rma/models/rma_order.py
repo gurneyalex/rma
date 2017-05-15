@@ -326,8 +326,8 @@ class RmaOrder(models.Model):
             rec.state = 'to_approve'
             if rec.rule_id and rec.rule_id.id:
                 if rec.rule_id.approval_policy == 'always':
-                    rec.state = 'approved'
                     rec.assigned_to = self.env.uid
+                    rec.action_rma_approve()
         return True
 
     @api.multi
