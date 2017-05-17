@@ -52,7 +52,7 @@
         </record>
 
         <record id="action_rma_customer_lines" model="ir.actions.act_window">
-            <field name="name">RMA Customer Lines</field>
+            <field name="name">Customer RMA Lines</field>
             <field name="res_model">rma.order.line</field>
             <field name="domain">[('state','in', ['approved', 'done']),
                 ('type','=', 'customer'), ('warranty_state','!=', 'expired'),
@@ -65,7 +65,7 @@
         </record>
 
         <record id="action_rma_supplier_lines" model="ir.actions.act_window">
-            <field name="name">RMA Supplier Lines</field>
+            <field name="name">Supplier RMA Lines</field>
             <field name="res_model">rma.order.line</field>
             <field name="domain">[('state','in', ['approved', 'done']),
                 ('type','=', 'supplier'), ('warranty_state','!=', 'expired')]</field>

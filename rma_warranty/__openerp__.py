@@ -8,8 +8,7 @@
     'name': 'RMA Warranty',
     'version': '9.0.1.0.0',
     'category': 'RMA',
-    'summary': 'RMA from PO',
-    'description': """
+    'summary': """
     Introduces de warranty to the RMA:
     The warranty can be set up in the company or in the product.
     It uses as reference the invoice date. Set the number of warranty months

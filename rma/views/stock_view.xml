@@ -33,8 +33,8 @@
             <field name="inherit_id" ref="stock.stock_location_route_form_view"/>
             <field name="model">stock.location.route</field>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='warehouse_ids']" position="after">
-                    <br/><field name="rma_selectable" string="RMA Order Lines"/>
+                <xpath expr="//field[@name='warehouse_ids']" position="before">
+                    <field name="rma_selectable" string="RMA Order Lines"/>
                 </xpath>
             </field>
         </record>

@@ -50,7 +50,7 @@
                             class="oe_highlight" groups="rma.group_rma_customer_user"/>
                     <button name="action_rma_draft" type="object"
                             string="Back to Draft"
-                            attrs="{'invisible':[('state', 'not in', ('to_approve', 'done'))]}" class="oe_highlight"
+                            attrs="{'invisible':[('state', '=', 'draft')]}" class="oe_highlight"
                             groups="rma.group_rma_customer_user,group_rma_supplier_user"/>
                     <button name="action_rma_approve" type="object"
                             string="Approve"
@@ -186,7 +186,7 @@
                             groups="rma.group_rma_supplier_user"/>
                     <button name="action_rma_draft" type="object"
                             string="Back to Draft"
-                            attrs="{'invisible':[('state', 'not in', ('to_approve', 'done'))]}" class="oe_highlight"
+                            attrs="{'invisible':[('state', '=', 'draft')]}" class="oe_highlight"
                             groups="rma.group_rma_supplier_user"/>
                     <button name="action_rma_approve" type="object"
                             string="Approve"
@@ -352,7 +352,7 @@
             <field name="res_model">rma.order</field>
             <field name="view_type">form</field>
             <field name="domain">[('type','=', 'customer')]</field>
-            <field name="context">{"search_default_requested_by":uid,
+            <field name="context">{"search_default_assigned_to":uid,
                 'customer':1}</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_tree"/>
@@ -363,7 +363,7 @@
             <field name="res_model">rma.order</field>
             <field name="view_type">form</field>
             <field name="domain">[('type','=', 'supplier')]</field>
-            <field name="context">{"search_default_requested_by":uid, 'supplier':1}</field>
+            <field name="context">{"search_default_assigned_to":uid, 'supplier':1}</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_supplier_tree"/>
         </record>

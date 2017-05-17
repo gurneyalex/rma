@@ -142,8 +142,7 @@ class RmaLineMakeSaleOrderItem(models.TransientModel):
                                  readonly=True)
     name = fields.Char(string='Description', required=True, readonly=True)
     product_qty = fields.Float(string='Quantity to sell',
-                               digits=dp.get_precision('Product UoS'),
-                               readonly=True)
+                               digits=dp.get_precision('Product UoS'))
     product_uom_id = fields.Many2one('product.uom', string='UoM',
                                      readonly=True)
     free_of_charge = fields.Boolean('Free of Charge')

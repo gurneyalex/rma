@@ -152,19 +152,20 @@ class RmaOrderLine(models.Model):
         self.qty_delivered = qty
 
     @api.one
-    @api.depends('refund_line_ids', 'state', 'operation_id', 'type')
+    @api.depends('refund_line_ids.invoice_id.state',
+                 'state', 'operation_id', 'type')
     def _compute_qty_refunded(self):
         qty = 0.0
         if self.operation_id.refund_policy == 'no':
             self.qty_refunded = qty
         for refund in self.refund_line_ids:
-            if refund.invoice_id.state != 'cancel':
+            if refund.invoice_id.state in ('open', 'paid'):
                 qty += refund.quantity
         self.qty_refunded = qty
 
     @api.one
     @api.depends('invoice_line_id', 'state', 'operation_id', 'type',
-                 'refund_line_ids')
+                 'refund_line_ids.invoice_id.state')
     def _compute_qty_to_refund(self):
         qty = 0.0
         if self.operation_id.refund_policy == 'no':
@@ -175,7 +176,7 @@ class RmaOrderLine(models.Model):
             qty = self.qty_received
         if self.refund_line_ids:
             for refund in self.refund_line_ids:
-                if refund.invoice_id.state != 'cancel':
+                if refund.invoice_id.state in ('open', 'paid'):
                     qty -= refund.quantity
         self.qty_to_refund = qty
 

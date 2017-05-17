@@ -73,7 +73,7 @@ class AccountInvoiceLine(models.Model):
         for invl in self:
             for rmal in invl.rma_line_ids:
                 rma_list.append(rmal.rma_id.id)
-        self.rma_count = len(list(set(rma_list)))
+            invl.rma_count = len(list(set(rma_list)))
 
     rma_count = fields.Integer(compute=_compute_rma_count,
                                string='# of RMA',
