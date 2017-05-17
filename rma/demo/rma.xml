@@ -15,7 +15,7 @@
         <field name="code">RPLS</field>
         <field name="refund_policy">no</field>
         <field name="receipt_policy">ordered</field>
-        <field name="delivery_policy">received</field>
+        <field name="delivery_policy">ordered</field>
         <field name="supplier_route_id" ref="rma.route_rma_supplier"/>
         <field name="is_dropship" eval="False"/>
     </record>

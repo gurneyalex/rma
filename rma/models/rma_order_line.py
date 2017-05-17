@@ -292,9 +292,7 @@ class RmaOrderLine(models.Model):
              "operation dropship")
     product_qty = fields.Float(
         string='Ordered Qty', copy=False,
-        digits=dp.get_precision('Product Unit of Measure'),
-        readonly=True,
-        states={'draft': [('readonly', False)]})
+        digits=dp.get_precision('Product Unit of Measure'))
     qty_to_receive = fields.Float(
         string='Qty To Receive',
         digits=dp.get_precision('Product Unit of Measure'),
