@@ -36,7 +36,7 @@
                     <field name="product_id"/>
                     <field name="name"/>
                     <field name="origin"/>
-                    <field name="operation_id"/>
+                    <field name="operation_id" domain="[('type','=','supplier')]"/>
                     <field name="partner_address_id"/>
                     <field name="uom_id" groups="product.group_uom"/>
                     <field name="product_qty"/>
@@ -102,14 +102,6 @@
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
-                        <group name="operation" string="Operation">
-                            <field name="product_qty"/>
-                            <field name="operation_id"/>
-                            <field name="is_dropship" invisible="True"/>
-                            <field name="partner_address_id"
-                                   attrs="{'required':[('is_dropship', '=', True)]}"/>
-                            <field name="invoice_line_id" invisible="True"/>
-                        </group>
                     </group>
                     <group>
                         <group name="quantities" col="4" string="Quantities">
@@ -137,6 +129,25 @@
                         </page>
                         <page name="refunds" string="Refunds">
                             <field name="refund_line_ids" nolabel="1"/>
+                        </page>
+                        <page name="operation" string="Policy">
+                            <group name="operation" string="Operation">
+                                <field name="product_qty"/>
+                                <field name="operation_id" domain="[('type','=','customer')]"/>
+                                <field name="is_dropship" invisible="True"/>
+                                <field name="partner_address_id"
+                                       attrs="{'required':[('is_dropship', '=', True)]}"/>
+                                <field name="invoice_line_id" invisible="True"/>
+                            </group>
+                            <group name="logistics">
+                                <field name="location_id"/>
+                                <field name="delivery_address_id"
+                                       groups='rma.group_rma_delivery_invoice_address'/>
+                                <field name="invoice_address_id"
+                                       groups='rma.group_rma_delivery_invoice_address'/>
+                                <field name="warehouse_id"/>
+                                <field name="route_id"/>
+                            </group>
                         </page>
                     </notebook>
                 </form>
@@ -200,14 +211,6 @@
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
-                        <group name="operation" string="Operation">
-                            <field name="product_qty"/>
-                            <field name="operation_id"/>
-                            <field name="is_dropship" invisible="True"/>
-                            <field name="partner_address_id"
-                                   attrs="{'required':[('is_dropship', '=', True)]}"/>
-                            <field name="invoice_line_id" invisible="True"/>
-                        </group>
                     </group>
                     <group>
                         <group name="quantities" col="4" string="Quantities">
@@ -235,6 +238,27 @@
                         </page>
                         <page name="refunds" string="Refunds">
                             <field name="refund_line_ids" nolabel="1"/>
+                        </page>
+                        <page name="operation" string="Policy">
+                            <group name="operation" string="Operation">
+                                <field name="product_qty"/>
+                                <field name="operation_id"/>
+                                <field name="is_dropship" invisible="True"/>
+                                <field name="partner_address_id"
+                                       attrs="{'required':[('is_dropship', '=', True)]}"/>
+                                <field name="invoice_line_id" invisible="True"/>
+                            </group>
+                            <group name="logistics">
+                                <field name="location_id"/>
+                                <field name="customer_location_id"/>
+                                <field name="supplier_location_id"/>
+                                <field name="delivery_address_id"
+                                       groups='rma.group_rma_delivery_invoice_address'/>
+                                <field name="invoice_address_id"
+                                       groups='rma.group_rma_delivery_invoice_address'/>
+                                <field name="warehouse_id"/>
+                                <field name="route_id"/>
+                            </group>
                         </page>
                     </notebook>
                 </form>

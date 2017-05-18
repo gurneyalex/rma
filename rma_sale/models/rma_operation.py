@@ -13,4 +13,4 @@ class RmaOperation(models.Model):
     sale_type = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
-        string="Sale Policy", required=True, default='no')
+        string="Sale Policy", default='no')

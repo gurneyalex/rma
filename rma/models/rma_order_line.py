@@ -19,6 +19,69 @@ class RmaOrderLine(models.Model):
     _rec_name = "rma_id"
     _order = "sequence"
 
+    @api.model
+    def _default_warehouse_id(self):
+        company = self.env.user.company_id.id
+        warehouse = self.env['stock.warehouse'].search(
+            [('company_id', '=', company)], limit=1)
+        return warehouse.id
+
+    @api.model
+    def _default_customer_location_id(self):
+        return self.env.ref('stock.stock_location_customers') or False
+
+    @api.model
+    def _default_supplier_location_id(self):
+        return self.env.ref('stock.stock_location_suppliers') or False
+
+    @api.model
+    def _default_location_id(self):
+        if self.operation_id:
+            return self.operation_id.location_id.id
+        else:
+            company = self.env.user.company_id.id
+            warehouse = self.env['stock.warehouse'].search(
+                [('company_id', '=', company)], limit=1)
+            return warehouse.lot_rma_id.id
+
+    @api.model
+    def _default_receipt_policy(self):
+        if self.operation_id:
+            return self.operation_id.receipt_policy or 'no'
+        return False
+
+    @api.model
+    def _default_refund_policy(self):
+        if self.operation_id:
+            return self.operation_id.refund_policy or 'no'
+        return False
+
+    @api.model
+    def _default_delivery_policy(self):
+        if self.operation_id:
+            return self.operation_id.delivery_policy or 'no'
+        return False
+
+    @api.model
+    def _default_delivery_address(self):
+        return self.parent_id.id
+
+    @api.model
+    def _default_invoice_address(self):
+        return self.parent_id.id
+
+    @api.model
+    def _default_route_id(self):
+        if self.operation_id:
+            return self.operation_id.route_id.id or False
+        return False
+
+    @api.model
+    def _default_is_dropship(self):
+        if self.operation_id:
+            return self.operation_id.is_dropship
+        return False
+
     @api.one
     def _compute_in_shipment_count(self):
         picking_ids = []
@@ -75,8 +138,7 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy', 'delivery_policy', 'type')
     def _compute_qty_incoming(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), True, False)
@@ -84,17 +146,17 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy', 'product_qty',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy', 'product_qty',
+                 'delivery_policy', 'type')
     def _compute_qty_to_receive(self):
-        if self.operation_id.receipt_policy == 'no' or (
+        if self.receipt_policy == 'no' or (
                 self.type == 'supplier' and
-                    self.operation_id.is_dropship):
+                    self.is_dropship):
             self.qty_to_receive = 0.0
-        elif self.operation_id.receipt_policy == 'ordered':
+        elif self.receipt_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), True, False)
             self.qty_to_receive = self.product_qty - qty
-        elif self.operation_id.receipt_policy == 'received':
+        elif self.receipt_policy == 'received':
             if self.type == 'customer':
                 qty = self._get_rma_move_qty(('done'), True, False)
                 self.qty_to_receive = self.qty_received - qty
@@ -106,17 +168,17 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state', 'parent_id',
-                 'operation_id.receipt_policy', 'product_qty',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy', 'product_qty',
+                 'delivery_policy', 'type')
     def _compute_qty_to_deliver(self):
-        if self.operation_id.delivery_policy == 'no' or (
+        if self.delivery_policy == 'no' or (
                 self.type == 'customer' and
-                    self.operation_id.is_dropship):
+                    self.is_dropship):
             self.qty_to_deliver = 0.0
-        elif self.operation_id.delivery_policy == 'ordered':
+        elif self.delivery_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), False, True)
             self.qty_to_deliver = self.product_qty - qty
-        elif self.operation_id.delivery_policy == 'received':
+        elif self.delivery_policy == 'received':
             qty = self._get_rma_move_qty(('done'), False, True)
             if self.parent_id and self.parent_id.id:
                 qty_to_deliver = self.parent_id.qty_received - qty
@@ -128,16 +190,16 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy',
+                 'delivery_policy', 'type')
     def _compute_qty_received(self):
         qty = self._get_rma_move_qty(('done'), True, False)
         self.qty_received = qty
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy',
+                 'delivery_policy', 'type')
     def _compute_qty_outgoing(self):
         qty = self._get_rma_move_qty(
             ('draft', 'confirmed', 'assigned'), False, True)
@@ -145,8 +207,8 @@ class RmaOrderLine(models.Model):
 
     @api.one
     @api.depends('procurement_ids.state', 'state',
-                 'operation_id.receipt_policy',
-                 'operation_id.delivery_policy', 'type')
+                 'receipt_policy',
+                 'delivery_policy', 'type')
     def _compute_qty_delivered(self):
         qty = self._get_rma_move_qty(('done'), False, True)
         self.qty_delivered = qty
@@ -156,7 +218,7 @@ class RmaOrderLine(models.Model):
                  'state', 'operation_id', 'type')
     def _compute_qty_refunded(self):
         qty = 0.0
-        if self.operation_id.refund_policy == 'no':
+        if self.refund_policy == 'no':
             self.qty_refunded = qty
         for refund in self.refund_line_ids:
             if refund.invoice_id.state in ('open', 'paid'):
@@ -168,11 +230,11 @@ class RmaOrderLine(models.Model):
                  'refund_line_ids.invoice_id.state')
     def _compute_qty_to_refund(self):
         qty = 0.0
-        if self.operation_id.refund_policy == 'no':
+        if self.refund_policy == 'no':
             self.qty_to_refund = qty
-        elif self.operation_id.refund_policy == 'ordered':
+        elif self.refund_policy == 'ordered':
             qty = self.product_qty
-        elif self.operation_id.refund_policy == 'received':
+        elif self.refund_policy == 'received':
             qty = self.qty_received
         if self.refund_line_ids:
             for refund in self.refund_line_ids:
@@ -202,26 +264,19 @@ class RmaOrderLine(models.Model):
             refund_list.append(inv_line.invoice_id.id)
         self.refund_count = len(list(set(refund_list)))
 
-    @api.model
-    def _default_dest_location_id(self):
-        if self.rma_id.warehouse_id.lot_rma_id:
-            return self.rma_id.warehouse_id.lot_rma_id.id
-        else:
-            return False
-
-    @api.model
-    def _default_src_location_id(self):
-        if self.type == 'customer':
-            if self.rma_id.partner_id.property_stock_customer:
-                return lines.rma_id.partner_id.property_stock_customer.id
-            else:
-                return False
-        else:
-            if self.rma_id.partner_id.property_stock_supplier:
-                return lines.rma_id.partner_id.property_stock_supplier.id
-            else:
-                return False
-
+    delivery_address_id = fields.Many2one(
+        'res.partner', readonly=True,
+        states={'draft': [('readonly', False)]},
+        string='Partner delivery address',
+        default=_default_delivery_address,
+        help="This address will be used to "
+        "deliver repaired or replacement products.")
+    invoice_address_id = fields.Many2one(
+        'res.partner', readonly=True,
+        states={'draft': [('readonly', False)]},
+        string='Partner invoice address',
+        default=_default_invoice_address,
+        help="Invoice address for current rma order.")
     procurement_count = fields.Integer(compute=_compute_procurement_count,
                                        string='# of Procurements', copy=False,
                                        default=0)
@@ -280,7 +335,38 @@ class RmaOrderLine(models.Model):
     type = fields.Selection(related='rma_id.type')
     route_id = fields.Many2one('stock.location.route', string='Route',
                                domain=[('rma_selectable', '=', True)])
-    is_dropship = fields.Boolean(related="operation_id.is_dropship")
+    is_dropship = fields.Boolean('Dropship', default=False)
+
+    refund_policy = fields.Selection([
+        ('no', 'No refund'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Received Quantities')], string="Refund Policy",
+        default=_default_refund_policy)
+    receipt_policy = fields.Selection([
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Delivered Quantities')],
+        default=_default_receipt_policy,
+        string="Receipts Policy")
+    delivery_policy = fields.Selection([
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Received Quantities')],
+        default=_default_delivery_policy,
+        string="Delivery Policy")
+    route_id = fields.Many2one(
+        'stock.location.route', string='Route',
+        default=_default_route_id,
+        domain=[('rma_selectable', '=', True)])
+    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
+                                   states={'draft': [('readonly', False)]},
+                                   default=_default_warehouse_id)
+    location_id = fields.Many2one('stock.location',
+                                  'Default Procurement Location',
+                                  default=_default_location_id)
+    supplier_location_id = fields.Many2one('stock.location',
+                                  'Default Procurement Supplier Location',
+                                  default= _default_customer_location_id)
+    customer_location_id = fields.Many2one('stock.location',
+                                  'Default Procurement Customer Location',
+                                  default=_default_supplier_location_id)
     parent_id = fields.Many2one(
         'rma.order.line', string='Parent RMA line', ondelete='cascade')
     children_ids = fields.One2many('rma.order.line', 'parent_id')

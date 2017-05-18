@@ -16,21 +16,22 @@ class RmaOperation(models.Model):
     refund_policy = fields.Selection([
         ('no', 'No refund'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')], string="Refund Policy",
-        required=True, default='no')
+        default='no')
     receipt_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Delivered Quantities')],
-        string="Receipts Policy", required=True, default='no')
+        string="Receipts Policy", default='no')
     delivery_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
-        string="Delivery Policy", required=True, default='no')
-    customer_route_id = fields.Many2one(
-        'stock.location.route', string='Customer Route',
-        domain=[('rma_selectable', '=', True)])
-    supplier_route_id = fields.Many2one(
-        'stock.location.route', string='Supplier Route',
+        string="Delivery Policy", default='no')
+    route_id = fields.Many2one(
+        'stock.location.route', string='Route',
         domain=[('rma_selectable', '=', True)])
     is_dropship = fields.Boolean('Dropship', default=False)
+    location_id = fields.Many2one('stock.location', 'Sent To This Location')
+    type = fields.Selection([
+        ('customer', 'Customer'), ('supplier', 'Supplier')],
+        string="Used in RMA of this type", required=True, default='customer')
     rma_line_ids = fields.One2many('rma.order.line', 'operation_id',
                                    'RMA lines')

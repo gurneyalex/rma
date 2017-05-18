@@ -19,13 +19,6 @@ class RmaOrder(models.Model):
     _inherit = ['mail.thread']
 
     @api.model
-    def _default_warehouse_id(self):
-        company = self.env.user.company_id.id
-        warehouse_ids = self.env['stock.warehouse'].search(
-            [('company_id', '=', company)], limit=1)
-        return warehouse_ids
-
-    @api.model
     def _compute_rule_id(self):
         if self.company_id and self.company_id.id:
             if self.company_id.rma_rule_id and self.company_id.rma_rule_id.id:
@@ -50,17 +43,6 @@ class RmaOrder(models.Model):
 
     comment = fields.Text('Additional Information', readonly=True, states={
         'draft': [('readonly', False)]})
-    delivery_address_id = fields.Many2one(
-        'res.partner', readonly=True,
-        states={'draft': [('readonly', False)]},
-        string='Partner delivery address',
-        help="This address will be used to "
-        "deliver repaired or replacement products.")
-    invoice_address_id = fields.Many2one(
-        'res.partner', readonly=True,
-        states={'draft': [('readonly', False)]},
-        string='Partner invoice address',
-        help="Invoice address for current rma order.")
     add_invoice_id = fields.Many2one('account.invoice', string='Add Invoice',
                                      ondelete='set null', readonly=True,
                                      states={'draft': [('readonly', False)]})
@@ -84,10 +66,6 @@ class RmaOrder(models.Model):
                               compute=_compute_rule_id)
     rma_line_ids = fields.One2many('rma.order.line', 'rma_id',
                                    string='RMA lines')
-    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
-                                   required=True, readonly=True,
-                                   states={'draft': [('readonly', False)]},
-                                   default=_default_warehouse_id)
 
     @api.model
     def create(self, vals):

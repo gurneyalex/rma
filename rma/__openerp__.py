@@ -18,7 +18,7 @@
     'depends': ['account', 'stock', 'mail',
                 'procurement'],
     'demo': ['demo/stock.xml',
-             'demo/rma.xml'],
+             'demo/rma_operation.xml'],
     'data': ['security/rma.xml',
              'security/ir.model.access.csv',
              'data/rma_sequence.xml',

@@ -64,8 +64,18 @@ class RmaAddinvoice(models.TransientModel):
             'product_qty': line.quantity,
             'price_unit': line.invoice_id.currency_id.compute(
                 line.price_unit, line.currency_id, round=False),
+            'delivery_address_id': self.invoice_id.partner_id.id,
+            'invoice_address_id': self.invoice_id.partner_id.id,
             'rma_id': self.rma_id.id
         }
+        if operation:
+            data.update(
+                {'route_id': operation.route_id.id,
+                 'receipt_policy': operation.receipt_policy,
+                 'location_id': operation.location_id.id,
+                 'refund_policy': operation.refund_policy,
+                 'delivery_policy': operation.delivery_policy,
+                 'id_dropship': operation.id_dropship})
         return data
 
     @api.model

@@ -129,11 +129,6 @@
                             <field name="requested_by"
                                    groups="base.group_user"
                                    context="{'default_groups_ref': ['rma.rma_user']}"/>
-                            <field name="delivery_address_id"
-                                   groups='rma.group_rma_delivery_invoice_address'/>
-                            <field name="invoice_address_id"
-                                   groups='rma.group_rma_delivery_invoice_address'/>
-                            <field name="warehouse_id"/>
                             <field name="date_rma"/>
                             <field name="type" invisible="1"/>
                         </group>
@@ -257,11 +252,6 @@
                             <field name="requested_by"
                                    groups="base.group_user"
                                    context="{'default_groups_ref': ['rma.rma_user']}"/>
-                            <field name="delivery_address_id"
-                                   groups='rma.group_rma_delivery_invoice_address'/>
-                            <field name="invoice_address_id"
-                                   groups='rma.group_rma_delivery_invoice_address'/>
-                            <field name="warehouse_id"/>
                             <field name="date_rma"/>
                             <field name="type" invisible="1"/>
                         </group>

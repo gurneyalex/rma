@@ -73,7 +73,12 @@ class RmaRefund(models.TransientModel):
     @api.multi
     def compute_refund(self):
         for wizard in self:
-            values = self._prepare_refund(wizard, self.item_ids[0].rma_id)
+            first = self.item_ids[0]
+            values = self._prepare_refund(wizard, first.rma_id)
+            if len(first.line_id.invoice_address_id):
+                values['partner_id'] = first.line_id.invoice_address_id
+            else:
+                values['partner_id'] = first.rma_id.partner_id.id
             new_refund = self.env['account.invoice'].create(values)
             for item in self.item_ids:
                 refund_line_values = self.prepare_refund_line(item, new_refund)
@@ -90,7 +95,7 @@ class RmaRefund(models.TransientModel):
         rma_line_ids = self.env['rma.order.line'].browse(
             self.env.context['active_ids'])
         for line in rma_line_ids:
-            if line.operation_id.refund_policy == 'no':
+            if line.refund_policy == 'no':
                 raise exceptions.Warning(
                     _('The operation is not refund for at least one line'))
             if line.state != 'approved':
@@ -114,6 +119,7 @@ class RmaRefund(models.TransientModel):
             account = accounts['stock_output']
         else:
             account = accounts['stock_input']
+
         values = {
             'name': item.rma_id.name,
             'origin': item.rma_id.name,
@@ -154,10 +160,6 @@ class RmaRefund(models.TransientModel):
         team_id = team_ids[0] if team_ids else False
         if team_id:
             values['team_id'] = team_id.id
-        if len(order.delivery_address_id):
-            values['partner_id'] = order.invoice_address_id.id
-        else:
-            values['partner_id'] = order.partner_id.id
         if order.type == 'customer':
             values['type'] = 'out_refund'
         else:

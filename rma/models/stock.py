@@ -45,3 +45,6 @@ class StockMove(models.Model):
     #     if 'rma' in self.env.context:
     #         res['rma_line_id'] = self.env.context['rma']
     #     return res
+
+    # TODO: override def _account_entry_move in stockquant to change the
+    #  accounting

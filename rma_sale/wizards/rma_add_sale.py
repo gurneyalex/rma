@@ -66,6 +66,15 @@ class RmaAddSale(models.TransientModel):
                 line.price_unit, line.currency_id, round=False),
             'rma_id': self.rma_id.id
         }
+        if operation:
+            data.update(
+                {'route_id': operation.route_id.id or False,
+                 'receipt_policy': operation.receipt_policy or False,
+                 'location_id': operation.location_id.id or \
+                                line.warehouse_id.lot_rma_id.id,
+                 'refund_policy': operation.refund_policy or False,
+                 'delivery_policy': operation.delivery_policy or False,
+                 'id_dropship': operation.id_dropship or False})
         return data
 
     @api.model

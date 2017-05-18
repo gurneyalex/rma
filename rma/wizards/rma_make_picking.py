@@ -18,11 +18,7 @@ class RmaMakePicking(models.TransientModel):
 
     @api.returns('rma.order.line')
     def _prepare_item(self, line):
-        route = None
-        if line.type == 'customer':
-            route = line.operation_id.customer_route_id.id
-        elif line.type == 'supplier':
-            route = line.operation_id.supplier_route_id.id
+        route = line.route_id.id
         if not route:
             raise ValidationError(_('No route define for this '
                                   'operation'))
@@ -37,8 +33,8 @@ class RmaMakePicking(models.TransientModel):
                   'operation_id': line.operation_id.id,
                   'invoice_line_id': line.invoice_line_id.id,
                   'partner_address_id': line.partner_address_id.id,
-                  'qty_to_receive': line.qty_to_receive,
                   'route_id': route,
+                  'qty_to_receive': line.qty_to_receive,
                   'is_dropship': line.is_dropship,
                   'qty_to_deliver': line.qty_to_deliver,
                   'line_id': line.id,
@@ -90,8 +86,8 @@ class RmaMakePicking(models.TransientModel):
 
     @api.model
     def _get_address(self, line, picking_type, location):
-        if location == line.rma_id.warehouse_id.lot_rma_id:
-            delivery_address = line.rma_id.warehouse_id.partner_id.id
+        if line.delivery_address:
+            delivery_address = line.delivery_addres.id
         elif line.is_dropship and picking_type == 'outgoing':
             delivery_address = line.partner_address_id.id
         else:
@@ -103,33 +99,19 @@ class RmaMakePicking(models.TransientModel):
 
     @api.model
     def _get_procurement_data(self, line, group, qty, picking_type):
-        # incoming means returning products
         if picking_type == 'incoming':
             if line.type == 'customer':
-                if line.is_dropship:
-                    location = self.env.ref('stock.stock_location_suppliers')
-                else:
-                    location = line.rma_id.warehouse_id.lot_rma_id
-            else:
-                if line.is_dropship:
-                    location = self.env.ref('stock.stock_location_customers')
-                else:
-                    location = line.rma_id.warehouse_id.lot_rma_id
-
+                location = line.location_id.id
         else:
-            # delivery order
             if line.type == 'customer':
-                location = self.env.ref('stock.stock_location_customers')
+                location = line.customer_location_id.id
             else:
-                if line.is_dropship:
-                    location = self.env.ref('stock.stock_location_suppliers')
-                else:
-                    location = self.env.ref('stock.stock_location_suppliers')
-        warehouse = line.rma_id.warehouse_id
+                location = line.supplier_location_id.id
+
         delivery_address = self._get_address(line, picking_type, location)
 
         procurement_data = {
-            'name': line.operation_id.name,
+            'name': line.operation_id.name or False,
             'group_id': group.id,
             'origin': line.rma_id.name,
             'warehouse_id': warehouse.id,
@@ -171,11 +153,11 @@ class RmaMakePicking(models.TransientModel):
                 raise exceptions.Warning(
                     _('RMA %s is not approved') %
                     line.rma_id.name)
-            if line.operation_id.receipt_policy == 'no' and picking_type == \
+            if line.receipt_policy == 'no' and picking_type == \
                     'incoming':
                 raise exceptions.Warning(
                     _('No shipments needed for this operation'))
-            if line.operation_id.delivery_policy == 'no' and picking_type == \
+            if line.delivery_policy == 'no' and picking_type == \
                     'outgoing':
                 raise exceptions.Warning(
                     _('No deliveries needed for this operation'))

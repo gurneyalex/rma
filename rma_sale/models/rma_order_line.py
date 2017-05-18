@@ -10,16 +10,25 @@ from openerp.addons import decimal_precision as dp
 class RmaOrderLine(models.Model):
     _inherit = "rma.order.line"
 
+    @api.model
+    def _default_sale_type(self):
+        return self.sale_type or False
+
+    sale_type = fields.Selection([
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Received Quantities')],
+        string="Sale Policy", default=_default_sale_type)
+
     @api.one
-    @api.depends('sale_line_ids', 'operation_id', 'operation_id.sale_type',
+    @api.depends('sale_line_ids', 'operation_id', 'sale_type',
                  'product_id', 'product_qty')
     def _compute_qty_to_sell(self):
-        if self.operation_id.sale_type == 'no':
+        if self.sale_type == 'no':
             self.qty_to_sell = 0.0
-        elif self.operation_id.sale_type == 'ordered':
+        elif self.sale_type == 'ordered':
             qty = self._get_rma_sold_qty()
             self.qty_to_sell = self.product_qty - qty
-        elif self.operation_id.sale_type == 'received':
+        elif self.sale_type == 'received':
             qty = self._get_rma_sold_qty()
             self.qty_to_sell = self.qty_received - qty
         else:
