@@ -6,8 +6,7 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <tree string="RMA Line"
-                      decoration-muted="state in ('draft','to_approve')"
-                      create="false">
+                      decoration-muted="state in ('draft','to_approve')">
                     <field name="rma_id"/>
                     <field name="state" invisible="1"/>
                     <field name="partner_id"/>
@@ -28,8 +27,7 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <tree string="RMA Line"
-                      decoration-muted="state in ('draft','to_approve')"
-                      create="false">
+                      decoration-muted="state in ('draft','to_approve')">
                     <field name="rma_id"/>
                     <field name="state" invisible="1"/>
                     <field name="partner_id"/>
@@ -49,7 +47,7 @@
             <field name="name">rma.order.line.supplier.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="RMA Line" create="false">
+                <form string="RMA Line">
                     <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
@@ -86,67 +84,77 @@
                         </button>
                     </div>
                     <group>
-                        <group name="rma" col="4" string="Order">
-                            <group>
-                                <field name="rma_id" readonly="1"/>
-                                <field name="origin"/>
-                            </group>
-                            <group>
-                                <field name="state" readonly="1"/>
-                                <field name="requested_by" readonly="1"/>
-                                <field name="assigned_to" readonly="1"/>
-                            </group>
+                        <group name="rma" string="Order">
+                            <field name="rma_id" readonly="1"/>
+                            <field name="origin"/>
+                            <field name="state" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                        </group>
+                        <group name="contact" string="Contact">
+                            <field name="requested_by" readonly="1"/>
+                            <field name="assigned_to" readonly="1"/>
                         </group>
                         <group name="product" string="Product">
                             <field name="product_id"/>
+                            <field name="product_qty"/>
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
                     </group>
-                    <group>
-                        <group name="quantities" col="4" string="Quantities">
-                            <group name="receive">
-                                <field name="qty_to_receive"/>
-                                <field name="qty_incoming"/>
-                                <field name="qty_received"/>
-                            </group>
-                            <group name="deliver">
-                                <field name="qty_to_deliver"/>
-                                <field name="qty_outgoing"/>
-                                <field name="qty_delivered"/>
-                            </group>
-                            <group name="refund">
-                                <field name="qty_to_refund"/>
-                                <field name="qty_refunded"/>
-                            </group>
-                        </group>
-                    </group>
-                    <label for="name"/>
-                    <field name="name" readonly="1"/>
                     <notebook>
+                        <page name="operation" string="Operation">
+                            <group>
+                                <group name="operation" string="Operation">
+                                    <field name="operation_id" domain="[('type','=','supplier')]"/>
+                                    <field name="refund_policy"/>
+                                    <field name="receipt_policy"/>
+                                    <field name="delivery_policy"/>
+                                    <field name="invoice_line_id" invisible="True"/>
+                                </group>
+                                <group name="warehouse" string="Warehouse">
+                                    <field name="warehouse_id"/>
+                                    <field name="location_id"
+                                           domain="[('warehouse_id', '=', warehouse_id),
+                                                    ('usage', '=', 'internal')]"/>
+                                    <field name="supplier_location_id"/>
+                                    <field name="delivery_address_id"
+                                           groups='rma.group_rma_delivery_invoice_address'/>
+                                    <field name="invoice_address_id"
+                                           groups='rma.group_rma_delivery_invoice_address'/>
+                                    <field name="route_id"/>
+                                </group>
+                                <group name="dropship" string="Dropship">
+                                    <field name="is_dropship"/>
+                                    <field name="partner_address_id"
+                                           attrs="{'required':[('is_dropship', '=', True)],
+                                                   'invisible':[('is_dropship', '=', False)]}"/>
+                                </group>
+                            </group>
+                        </page>
                         <page name="stock" string="Stock Moves">
                             <field name="move_ids" nolabel="1" readonly="1"/>
                         </page>
                         <page name="refunds" string="Refunds">
                             <field name="refund_line_ids" nolabel="1"/>
                         </page>
-                        <page name="operation" string="Policy">
-                            <group name="operation" string="Operation">
-                                <field name="product_qty"/>
-                                <field name="operation_id" domain="[('type','=','customer')]"/>
-                                <field name="is_dropship" invisible="True"/>
-                                <field name="partner_address_id"
-                                       attrs="{'required':[('is_dropship', '=', True)]}"/>
-                                <field name="invoice_line_id" invisible="True"/>
-                            </group>
-                            <group name="logistics">
-                                <field name="location_id"/>
-                                <field name="delivery_address_id"
-                                       groups='rma.group_rma_delivery_invoice_address'/>
-                                <field name="invoice_address_id"
-                                       groups='rma.group_rma_delivery_invoice_address'/>
-                                <field name="warehouse_id"/>
-                                <field name="route_id"/>
+                        <page name="quantities" string="Quantities">
+                            <group>
+                                <group name="quantities" col="4" string="Quantities">
+                                    <group name="receive">
+                                        <field name="qty_to_receive"/>
+                                        <field name="qty_incoming"/>
+                                        <field name="qty_received"/>
+                                    </group>
+                                    <group name="deliver">
+                                        <field name="qty_to_deliver"/>
+                                        <field name="qty_outgoing"/>
+                                        <field name="qty_delivered"/>
+                                    </group>
+                                    <group name="refund">
+                                        <field name="qty_to_refund"/>
+                                        <field name="qty_refunded"/>
+                                    </group>
+                                </group>
                             </group>
                         </page>
                     </notebook>
@@ -158,7 +166,7 @@
             <field name="name">rma.order.line.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="Rma Line" create="false">
+                <form string="Rma Line">
                     <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
@@ -195,69 +203,78 @@
                         </button>
                     </div>
                     <group>
-                        <group name="rma" col="4" string="Order">
-                            <group>
-                                <field name="rma_id" readonly="1"/>
-                                <field name="origin"/>
-                            </group>
-                            <group>
-                                <field name="state" readonly="1"/>
-                                <field name="requested_by" readonly="1"/>
-                                <field name="assigned_to" readonly="1"/>
-                            </group>
+                        <group name="rma" string="Order">
+                            <field name="rma_id" readonly="1"/>
+                            <field name="origin"/>
+                            <field name="state" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                        </group>
+                        <group name="contact" string="Contact">
+                            <field name="requested_by" readonly="1"/>
+                            <field name="assigned_to" readonly="1"/>
                         </group>
                         <group name="product" string="Product">
                             <field name="product_id"/>
+                            <field name="product_qty"/>
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
                     </group>
-                    <group>
-                        <group name="quantities" col="4" string="Quantities">
-                            <group name="receive">
-                                <field name="qty_to_receive"/>
-                                <field name="qty_incoming"/>
-                                <field name="qty_received"/>
-                            </group>
-                            <group name="deliver">
-                                <field name="qty_to_deliver"/>
-                                <field name="qty_outgoing"/>
-                                <field name="qty_delivered"/>
-                            </group>
-                            <group name="refund">
-                                <field name="qty_to_refund"/>
-                                <field name="qty_refunded"/>
-                            </group>
-                        </group>
-                    </group>
-                    <label for="name"/>
-                    <field name="name" readonly="1"/>
                     <notebook>
+                        <page name="operation" string="Operation">
+                            <group>
+                                <group name="operation" string="Operation">
+                                    <field name="operation_id" domain="[('type','=','customer')]"/>
+                                    <field name="refund_policy"/>
+                                    <field name="receipt_policy"/>
+                                    <field name="delivery_policy"/>
+                                    <field name="invoice_line_id" invisible="True"/>
+                                </group>
+                                <group name="warehouse" string="Warehouse">
+                                    <field name="warehouse_id"/>
+                                    <field name="location_id"
+                                           domain="[('warehouse_id', '=', warehouse_id),
+                                                    ('usage', '=', 'internal')]"/>
+                                    <field name="customer_location_id"/>
+                                    <field name="delivery_address_id"
+                                           groups='rma.group_rma_delivery_invoice_address'/>
+                                    <field name="invoice_address_id"
+                                           groups='rma.group_rma_delivery_invoice_address'/>
+
+                                    <field name="route_id"/>
+                                </group>
+                                <group name="dropship" string="Dropship">
+                                    <field name="is_dropship"/>
+                                    <field name="partner_address_id"
+                                           attrs="{'required':[('is_dropship', '=', True)],
+                                                   'invisible':[('is_dropship', '=', False)]}"/>
+                                </group>
+                            </group>
+                        </page>
                         <page name="stock" string="Stock Moves">
                             <field name="move_ids" nolabel="1" readonly="1"/>
                         </page>
                         <page name="refunds" string="Refunds">
                             <field name="refund_line_ids" nolabel="1"/>
                         </page>
-                        <page name="operation" string="Policy">
-                            <group name="operation" string="Operation">
-                                <field name="product_qty"/>
-                                <field name="operation_id"/>
-                                <field name="is_dropship" invisible="True"/>
-                                <field name="partner_address_id"
-                                       attrs="{'required':[('is_dropship', '=', True)]}"/>
-                                <field name="invoice_line_id" invisible="True"/>
-                            </group>
-                            <group name="logistics">
-                                <field name="location_id"/>
-                                <field name="customer_location_id"/>
-                                <field name="supplier_location_id"/>
-                                <field name="delivery_address_id"
-                                       groups='rma.group_rma_delivery_invoice_address'/>
-                                <field name="invoice_address_id"
-                                       groups='rma.group_rma_delivery_invoice_address'/>
-                                <field name="warehouse_id"/>
-                                <field name="route_id"/>
+                        <page name="quantities" string="Quantities">
+                            <group>
+                                <group name="quantities" col="4" string="Quantities">
+                                    <group name="receive">
+                                        <field name="qty_to_receive"/>
+                                        <field name="qty_incoming"/>
+                                        <field name="qty_received"/>
+                                    </group>
+                                    <group name="deliver">
+                                        <field name="qty_to_deliver"/>
+                                        <field name="qty_outgoing"/>
+                                        <field name="qty_delivered"/>
+                                    </group>
+                                    <group name="refund">
+                                        <field name="qty_to_refund"/>
+                                        <field name="qty_refunded"/>
+                                    </group>
+                                </group>
                             </group>
                         </page>
                     </notebook>
@@ -283,6 +300,12 @@
                                 context="{'group_by':'operation_id'}"/>
                         <filter name="product" string="Product" domain="[]"
                                 context="{'group_by':'product_id'}"/>
+                        <filter name="to_refund" string="To Refund" domain="[('qty_to_refund', '>', 0)]"
+                                context="{'group_by':'partner_id'}"/>
+                        <filter name="to_receive" string="To Receive" domain="[('qty_to_receive', '>', 0)]"
+                                context="{'group_by':'partner_id'}"/>
+                        <filter name="to_deliver" string="To Deliver" domain="[('qty_to_deliver', '>', 0)]"
+                                context="{'group_by':'partner_id'}"/>
                     </group>
                </search>
             </field>
@@ -295,7 +318,7 @@
                 ('type','=', 'customer'),
                 ('is_dropship','=', False)
                 ]</field>
-            <field name="context">{"search_default_requested_by":uid}</field>
+            <field name="context">{"search_default_assigned_to":uid}</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_line_tree"/>
@@ -306,7 +329,7 @@
             <field name="res_model">rma.order.line</field>
             <field name="domain">[('state','in', ['approved', 'done']),
                 ('type','=', 'supplier')]</field>
-            <field name="context">{"search_default_requested_by":uid}</field>
+            <field name="context">{"search_default_assigned_to":uid}</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_line_supplier_tree"/>

@@ -3,11 +3,13 @@
     <record id="location_rma" model="stock.location">
         <field name="name">WH RMA</field>
         <field name="usage">internal</field>
+        <field name="location_id" ref="stock.stock_location_stock"/>
     </record>
 
     <record id="location_rma_shop0" model="stock.location">
         <field name="name">RMA</field>
         <field name="usage">internal</field>
+        <field name="location_id" ref="stock.stock_location_shop0"/>
     </record>
 
     <record id="seq_picking_type_rma_cust_out" model="ir.sequence">

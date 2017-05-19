@@ -38,10 +38,17 @@
                         <group name="routes"
                                string="Routes">
                             <field name="route_id"/>
-                            <field name="location_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="location_id"
+                                domain="[('warehouse_id', '=', warehouse_id),
+                                         ('usage', '=', 'internal')]"/>
+                            <field name="customer_location_id"
+                                attrs="{'invisible':[('type', '=', 'supplier')]}"/>
+                            <field name="supplier_location_id"
+                                attrs="{'invisible':[('type', '=', 'customer')]}"/>
                             <field name="is_dropship"
                                    string="Receive in Supplier's Address"
-                                    attrs="{'invisible':[('type', '=', 'supplier')]}"/>
+                                   attrs="{'invisible':[('type', '=', 'supplier')]}"/>
                         </group>
                     </group>
                 </form>

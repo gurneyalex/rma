@@ -27,6 +27,8 @@ class RmaRefund(models.TransientModel):
                   'product_qty': line.product_qty,
                   'uom_id': line.uom_id.id,
                   'qty_to_refund': line.qty_to_refund,
+                  'refund_policy': line.refund_policy,
+                  'invoice_address_id': line.invoice_address_id.id,
                   'line_id': line.id,
                   'rma_id': line.rma_id.id,
                   'wiz_id': self.env.context['active_id']}
@@ -76,7 +78,7 @@ class RmaRefund(models.TransientModel):
             first = self.item_ids[0]
             values = self._prepare_refund(wizard, first.rma_id)
             if len(first.line_id.invoice_address_id):
-                values['partner_id'] = first.line_id.invoice_address_id
+                values['partner_id'] = first.line_id.invoice_address_id.id
             else:
                 values['partner_id'] = first.rma_id.partner_id.id
             new_refund = self.env['account.invoice'].create(values)
@@ -119,7 +121,9 @@ class RmaRefund(models.TransientModel):
             account = accounts['stock_output']
         else:
             account = accounts['stock_input']
-
+        if not account:
+            raise exceptions.ValidationError("Accounts are not configure for "
+                                             "this product")
         values = {
             'name': item.rma_id.name,
             'origin': item.rma_id.name,
@@ -170,6 +174,15 @@ class RmaRefund(models.TransientModel):
         values['date_invoice'] = wizard.date or wizard.date_invoice
         return values
 
+    @api.constrains('item_ids')
+    @api.one
+    def check_unique_invoice_address_id(self):
+        addresses = self.item_ids.mapped('invoice_address_id')
+        if len(addresses) > 1:
+            raise exceptions.ValidationError('The invoice address must be the '
+                                             'same for all the lines')
+        return True
+
 
 class RmaRefundItem(models.TransientModel):
     _name = "rma.refund.item"
@@ -194,8 +207,13 @@ class RmaRefundItem(models.TransientModel):
         string='Quantity Ordered', copy=False,
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True)
+    invoice_address_id = fields.Many2one('res.partner', 'Invoice Address')
     qty_to_refund = fields.Float(
         string='Quantity To Refund',
         digits=dp.get_precision('Product Unit of Measure'))
     uom_id = fields.Many2one('product.uom', string='Unit of Measure',
                              readonly=True)
+    refund_policy = fields.Selection([
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Received Quantities')],
+        string="Refund Policy")

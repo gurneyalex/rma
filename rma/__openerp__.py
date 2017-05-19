@@ -38,4 +38,5 @@
              'wizards/stock_config_settings.xml'],
     'installable': True,
     'auto_install': False,
+    "post_init_hook": "post_init_hook",
 }

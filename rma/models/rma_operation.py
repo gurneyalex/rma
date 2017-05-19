@@ -11,6 +11,21 @@ class RmaOperation(models.Model):
     _name = 'rma.operation'
     _description = 'RMA Operation'
 
+    @api.model
+    def _default_warehouse_id(self):
+        company = self.env.user.company_id.id
+        warehouse = self.env['stock.warehouse'].search(
+            [('company_id', '=', company)], limit=1)
+        return warehouse
+
+    @api.model
+    def _default_customer_location_id(self):
+        return self.env.ref('stock.stock_location_customers') or False
+
+    @api.model
+    def _default_supplier_location_id(self):
+        return self.env.ref('stock.stock_location_suppliers') or False
+
     name = fields.Char('Description', required=True)
     code = fields.Char('Code', required=True)
     refund_policy = fields.Selection([
@@ -29,7 +44,18 @@ class RmaOperation(models.Model):
         'stock.location.route', string='Route',
         domain=[('rma_selectable', '=', True)])
     is_dropship = fields.Boolean('Dropship', default=False)
-    location_id = fields.Many2one('stock.location', 'Sent To This Location')
+    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
+                                   default=_default_warehouse_id)
+    location_id = fields.Many2one(
+        'stock.location', 'Sent To This Company Location')
+    customer_location_id = fields.Many2one(
+        'stock.location', 'Sent To This Customer Location',
+        domain=[('usage', '=', 'customer')],
+        default=_default_customer_location_id)
+    supplier_location_id = fields.Many2one(
+        'stock.location', 'Sent To This Supplier Location',
+        domain=[('usage', '=', 'supplier')],
+        default=_default_supplier_location_id)
     type = fields.Selection([
         ('customer', 'Customer'), ('supplier', 'Supplier')],
         string="Used in RMA of this type", required=True, default='customer')

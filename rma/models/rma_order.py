@@ -22,7 +22,7 @@ class RmaOrder(models.Model):
     def _compute_rule_id(self):
         if self.company_id and self.company_id.id:
             if self.company_id.rma_rule_id and self.company_id.rma_rule_id.id:
-                self.rule_id = self.company_id.rma_rule_id.id
+                self.rule_id = self.company_id.rma_rule_id
 
     @api.model
     def _get_default_type(self):
@@ -341,8 +341,7 @@ class RmaOrder(models.Model):
                               'type': 'supplier',
                               'assigned_to': origin_rma.assigned_to.id,
                               'requested_by': origin_rma.requested_by.id,
-                              'date_rma': origin_rma.date_rma,
-                              'warehouse_id': origin_rma.warehouse_id.id}
+                              'date_rma': origin_rma.date_rma}
                 self = self.with_context(supplier=True)
                 rma_id = self.env['rma.order'].create(rma_values)
             else:
