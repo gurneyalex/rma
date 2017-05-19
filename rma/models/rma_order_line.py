@@ -28,61 +28,60 @@ class RmaOrderLine(models.Model):
 
     @api.model
     def _default_customer_location_id(self):
-        return self.env.ref('stock.stock_location_customers') or False
+        return self.env.ref('stock.stock_location_customers') or \
+               self.env['stock.location'].search([(
+                   'usage', '=', 'customer')], limit=1)
 
     @api.model
     def _default_supplier_location_id(self):
-        return self.env.ref('stock.stock_location_suppliers') or False
+        return self.env.ref('stock.stock_location_suppliers') or \
+               self.env['stock.location'].search([(
+                   'usage', '=', 'supplier')], limit=1)
 
     @api.model
     def _default_location_id(self):
         if self.operation_id:
-            return self.operation_id.location_id.id
+            if self.operation_id.location_id:
+                return self.operation_id.location_id
         elif self.warehouse_id:
             return self.warehouse_id.lot_rma_id
         else:
-            company = self.env.user.company_id.id
-            warehouse = self.env['stock.warehouse'].search(
-                [('company_id', '=', company)], limit=1)
-            return warehouse.lot_rma_id
+            return self.env['stock.location'].search([], limit=1)
 
     @api.model
     def _default_receipt_policy(self):
         if self.operation_id:
             return self.operation_id.receipt_policy or 'no'
-        return False
 
     @api.model
     def _default_refund_policy(self):
         if self.operation_id:
             return self.operation_id.refund_policy or 'no'
-        return False
 
     @api.model
     def _default_delivery_policy(self):
         if self.operation_id:
             return self.operation_id.delivery_policy or 'no'
-        return False
 
     @api.model
     def _default_delivery_address(self):
         partner_id = self.env.context.get('partner_id', False)
         if partner_id:
             return self.env['res.partner'].browse(partner_id)
-        return False
+        return self.env['res.partner'].search([], limit=1)
 
     @api.model
     def _default_invoice_address(self):
         partner_id = self.env.context.get('partner_id', False)
         if partner_id:
             return self.env['res.partner'].browse(partner_id)
-        return False
+        return self.env['res.partner'].search([], limit=1)
 
     @api.model
     def _default_route_id(self):
         if self.operation_id:
             return self.operation_id.route_id
-        return self.env['stock.location.route']
+        return self.env['stock.location.route'].search([], limit=1)
 
     @api.model
     def _default_is_dropship(self):
