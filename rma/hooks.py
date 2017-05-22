@@ -5,7 +5,6 @@
 # © 2009-2013 Akretion,
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html)
 from . import models
-
 from openerp import SUPERUSER_ID
 from openerp.api import Environment
 

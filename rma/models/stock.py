@@ -28,7 +28,7 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     rma_line_id = fields.Many2one('rma.order.line', string='RMA',
-                                  ondelete='set null')
+                                  ondelete='restrict')
 
     @api.model
     def create(self, vals):
