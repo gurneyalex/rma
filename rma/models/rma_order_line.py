@@ -13,8 +13,6 @@ from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
 class RmaOrderLine(models.Model):
     _name = "rma.order.line"
-    _rec_name = "rma_id"
-    _order = "sequence"
 
     @api.model
     def _default_warehouse_id(self):
