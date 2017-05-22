@@ -9,6 +9,7 @@ from . import models
 from openerp import SUPERUSER_ID
 from openerp.api import Environment
 
+
 def post_init_hook(cr, registry):
     env = Environment(cr, SUPERUSER_ID, {})
     locations = env['stock.location'].search([])

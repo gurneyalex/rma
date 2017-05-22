@@ -11,7 +11,7 @@ from openerp import api, fields, models
 class ProcurementOrder(models.Model):
     _inherit = 'procurement.order'
 
-    rma_line_id = fields.Many2one('rma.order.line', 'RMA')
+    rma_line_id = fields.Many2one('rma.order.line', 'RMA', ondelete="set null")
 
     @api.model
     def _run_move_create(self, procurement):
@@ -29,4 +29,4 @@ class ProcurementOrder(models.Model):
 class ProcurementGroup(models.Model):
     _inherit = 'procurement.group'
 
-    rma_id = fields.Many2one('rma.order', 'RMA')
+    rma_id = fields.Many2one('rma.order', 'RMA', ondelete="set null")

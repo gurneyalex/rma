@@ -86,4 +86,5 @@ class AccountInvoiceLine(models.Model):
     rma_line_id = fields.Many2one(
         comodel_name='rma.order.line',
         string="RMA line refund",
+        ondelete="set null",
         help="This will contain the rma line that originated the refund line")
