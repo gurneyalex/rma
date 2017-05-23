@@ -18,11 +18,6 @@ class RmaMakePicking(models.TransientModel):
 
     @api.returns('rma.order.line')
     def _prepare_item(self, line):
-        route = line.route_id
-        if not route:
-            raise ValidationError(_('No route define for this '
-                                  'operation'))
-
         values = {'product_id': line.product_id.id,
                   'name': line.name,
                   'product_qty': line.product_qty,
@@ -33,9 +28,11 @@ class RmaMakePicking(models.TransientModel):
                   'operation_id': line.operation_id.id,
                   'invoice_line_id': line.invoice_line_id.id,
                   'partner_address_id': line.partner_address_id.id,
-                  'route_id': route.id,
+                  'in_route_id': line.in_route_id.id,
+                  'out_route_id': line.out_route_id.id,
                   'qty_to_receive': line.qty_to_receive,
-                  'is_dropship': line.is_dropship,
+                  'customer_to_supplier': line.customer_to_supplier,
+                  'supplier_to_customer': line.supplier_to_customer,
                   'qty_to_deliver': line.qty_to_deliver,
                   'line_id': line.id,
                   'rma_id': line.rma_id.id,
@@ -43,10 +40,9 @@ class RmaMakePicking(models.TransientModel):
                   'delivery_address': line.delivery_address_id.id,
                   'receipt_policy': line.receipt_policy,
                   'delivery_policy': line.delivery_policy,
-                  'warehouse_id': line.warehouse_id.id,
+                  'in_warehouse_id': line.in_warehouse_id.id,
+                  'out_warehouse_id': line.out_warehouse_id.id,
                   'location_id': line.location_id.id,
-                  'customer_location_id': line.customer_location_id.id,
-                  'supplier_location_id': line.supplier_location_id.id,
                   }
         return values
 
@@ -87,49 +83,61 @@ class RmaMakePicking(models.TransientModel):
 
     def _get_procurement_group_data(self, line):
         group_data = {
-            'name': line.name,
+            'name': line.rma_id.name,
             'rma_id': line.rma_id.id,
         }
         return group_data
 
     @api.model
-    def _get_address(self, line, picking_type):
+    def _get_address(self, line):
         if line.delivery_address:
-            delivery_address = line.delivery_address.id
-        elif line.is_dropship and picking_type == 'outgoing':
-            delivery_address = line.partner_address_id.id
+            delivery_address = line.delivery_address
+        elif line.customer_to_supplier:
+            delivery_address = line.partner_address_id
         else:
-            if line.rma_id.delivery_address_id:
-                delivery_address = line.rma_id.delivery_address_id.id
-            else:
-                delivery_address = line.rma_id.partner_id.id
+            raise exceptions.Warning('Unknown delivery address')
         return delivery_address
+
+    def _get_address_location(self, delivery_address_id, type):
+        if type == 'supplier':
+            return delivery_address_id.property_stock_supplier
+        elif type == 'customer':
+            return delivery_address_id.property_stock_customer
+
 
     @api.model
     def _get_procurement_data(self, line, group, qty, picking_type):
+        delivery_address_id = self._get_address(line)
         if picking_type == 'incoming':
-            location = line.location_id
-        else:
-            if line.type == 'customer':
-                location = line.customer_location_id
+            if line.customer_to_supplier:
+                location = self._get_address_location(
+                    delivery_address_id, 'supplier')
             else:
-                location = line.supplier_location_id
-
-        delivery_address = self._get_address(line, picking_type)
-
+                location = line.location_id
+            warehouse = line.in_warehouse_id
+            route = line.in_route_id
+        else:
+            location = self._get_address_location(delivery_address_id,
+                                                  line.rma_id.type)
+            warehouse = line.out_warehouse_id
+            route = line.out_route_id
+        if not route:
+            raise exceptions.Warning("No route specified")
+        if not warehouse:
+            raise exceptions.Warning("No warehouse specified")
         procurement_data = {
-            'name': line.operation_id.name or False,
+            'name': line.rma_id.name,
             'group_id': group.id,
             'origin': line.rma_id.name,
-            'warehouse_id': line.warehouse_id.id,
+            'warehouse_id': warehouse.id,
             'date_planned': time.strftime(DT_FORMAT),
             'product_id': line.product_id.id,
             'product_qty': qty,
-            'partner_dest_id': delivery_address,
+            'partner_dest_id': delivery_address_id.id,
             'product_uom': line.product_id.product_tmpl_id.uom_id.id,
             'location_id': location.id,
             'rma_line_id': line.line_id.id,
-            'route_ids': [(4, line.route_id.id)]
+            'route_ids': [(4, route.id)]
         }
         return procurement_data
 
@@ -231,8 +239,6 @@ class RmaMakePickingItem(models.TransientModel):
     company_id = fields.Many2one('res.company')
     name = fields.Char(string='Description', required=True)
     operation_id = fields.Many2one(comodel_name="rma.operation")
-    route_id = fields.Many2one(
-        'stock.location.route', string='Route')
     partner_address_id = fields.Many2one(
         'res.partner', readonly=True,
         string='Partner Address',
@@ -253,7 +259,10 @@ class RmaMakePickingItem(models.TransientModel):
                              readonly=True)
     invoice_line_id = fields.Many2one('account.invoice.line',
                                       string='Invoice Line')
-    is_dropship = fields.Boolean(string="Dropship")
+    customer_to_supplier= fields.Boolean(
+        'The customer will send to the supplier', default=False)
+    supplier_to_customer = fields.Boolean(
+        'The supplier will send to the customer', default=False)
     receipt_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Delivered Quantities')],
@@ -262,15 +271,17 @@ class RmaMakePickingItem(models.TransientModel):
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
         string="Delivery Policy")
-    route_id = fields.Many2one(
-        'stock.location.route', string='Route',
+    in_route_id = fields.Many2one(
+        'stock.location.route', string='Inbound Route',
         domain=[('rma_selectable', '=', True)])
-    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse')
-    location_id = fields.Many2one('stock.location',
-                                  'Sent To This Company Location')
-    supplier_location_id = fields.Many2one('stock.location',
-                                  'Sent To This Supplier Location')
-    customer_location_id = fields.Many2one('stock.location',
-                                  'Sent To This Customer Location')
+    out_route_id = fields.Many2one(
+        'stock.location.route', string='Outbound Route',
+        domain=[('rma_selectable', '=', True)])
+    in_warehouse_id = fields.Many2one('stock.warehouse',
+                                      string='Inbound Warehouse')
+    out_warehouse_id = fields.Many2one('stock.warehouse',
+                                       string='Outbound Warehouse')
+    location_id = fields.Many2one(
+        'stock.location', 'Send To This Company Location')
     delivery_address = fields.Many2one(
         'res.partner', string='Partner delivery address')

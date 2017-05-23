@@ -31,7 +31,7 @@
     </record>
 
     <record id="view_rma_picking_out" model="ir.ui.view">
-        <field name="name">Deliver Products</field>
+        <field name="name">Create Delivery</field>
         <field name="model">rma_make_picking.wizard</field>
         <field name="arch" type="xml">
             <form string="Select lines for picking" name="lines">
@@ -59,7 +59,7 @@
     </record>
 
     <record id="action_rma_picking_in" model="ir.actions.act_window">
-        <field name="name">Receive Products / Buy</field>
+        <field name="name">Create Incoming Shipment</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -72,7 +72,7 @@
     </record>
 
     <record id="action_rma_picking_out" model="ir.actions.act_window">
-        <field name="name">Deliver Products</field>
+        <field name="name">Create Delivery</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">rma_make_picking.wizard</field>
         <field name="src_model">rma.order.line</field>
@@ -92,10 +92,10 @@
             <div name="button_box" position="before">
                 <header>
                     <button name="%(action_rma_picking_in)d" states="approved"
-                            string="Receive Products" class="oe_highlight"
+                            string="Create Incoming Shipment" class="oe_highlight"
                             type="action"/>
                     <button name="%(action_rma_picking_out)d" states="approved"
-                            string="Deliver Products" class="oe_highlight"
+                            string="Create Delivery" class="oe_highlight"
                             type="action"/>
                 </header>
             </div>
@@ -110,10 +110,10 @@
             <div name="button_box" position="before">
                 <header>
                     <button name="%(action_rma_picking_in)d" states="approved"
-                            string="Receive Products / Buy" class="oe_highlight"
+                            string="Create Incoming Shipment" class="oe_highlight"
                             type="action"/>
                     <button name="%(action_rma_picking_out)d" states="approved"
-                            string="Deliver Products" class="oe_highlight"
+                            string="Create Delivery" class="oe_highlight"
                             type="action"/>
                 </header>
             </div>
@@ -122,7 +122,7 @@
 
     <record model="ir.values" id="values_action_rma_picking_in">
         <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Receive Products / Buy</field>
+        <field name="name">Create Incoming Shipment</field>
         <field name="key2">client_action_multi</field>
         <field name="value" eval="'ir.actions.act_window,' + str(ref('action_rma_picking_in'))" />
         <field name="key">action</field>
@@ -131,7 +131,7 @@
 
     <record model="ir.values" id="values_action_rma_picking_out">
         <field name="model_id" ref="model_rma_order_line"/>
-        <field name="name">Deliver Products</field>
+        <field name="name">Create Delivery</field>
         <field name="key2">client_action_multi</field>
         <field name="value"
                eval="'ir.actions.act_window,' + str(ref('action_rma_picking_out'))" />

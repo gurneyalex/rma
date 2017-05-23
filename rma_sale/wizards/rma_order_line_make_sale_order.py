@@ -30,6 +30,8 @@ class RmaLineMakeSaleOrder(models.TransientModel):
             'name': line.name or line.product_id.name,
             'product_qty': line.qty_to_sell,
             'rma_id': line.rma_id.id,
+            'out_warehouse_id': line.out_warehouse_id.id,
+            'out_route_id': line.out_route_id.id,
             'product_uom_id': line.uom_id.id,
         }
 
@@ -60,7 +62,7 @@ class RmaLineMakeSaleOrder(models.TransientModel):
         return res
 
     @api.model
-    def _prepare_sale_order(self, warehouse, company):
+    def _prepare_sale_order(self, out_warehouse, company):
         if not self.partner_id:
             raise exceptions.Warning(
                 _('Enter a customer.'))
@@ -68,7 +70,7 @@ class RmaLineMakeSaleOrder(models.TransientModel):
         data = {
             'origin': '',
             'partner_id': customer.id,
-            'warehouse_id': warehouse.id,
+            'warehouse_id': out_warehouse.id,
             'company_id': company.id,
             }
         return data
@@ -81,8 +83,8 @@ class RmaLineMakeSaleOrder(models.TransientModel):
             'order_id': so.id,
             'product_id': product.id,
             'product_uom': product.uom_po_id.id,
-            'route_id': item.line_id.route_id.id,
-            'product_qty': item.product_qty,
+            'route_id': item.out_route_id.id,
+            'product_uom_qty': item.product_qty,
             'rma_line_id': item.line_id.id
         }
         if item.free_of_charge:
@@ -105,8 +107,8 @@ class RmaLineMakeSaleOrder(models.TransientModel):
             if self.sale_order_id:
                 sale = self.sale_order_id
             if not sale:
-                po_data = self._prepare_sale_order(
-                    line.rma_id.warehouse_id, line.company_id)
+                po_data = self._prepare_sale_order(line.out_warehouse_id,
+                                                   line.company_id)
                 sale = sale_obj.create(po_data)
 
             so_line_data = self._prepare_sale_order_line(sale, item)
@@ -145,4 +147,9 @@ class RmaLineMakeSaleOrderItem(models.TransientModel):
                                digits=dp.get_precision('Product UoS'))
     product_uom_id = fields.Many2one('product.uom', string='UoM',
                                      readonly=True)
+    out_warehouse_id = fields.Many2one('stock.warehouse',
+                                       string='Outbound Warehouse')
     free_of_charge = fields.Boolean('Free of Charge')
+    out_route_id = fields.Many2one(
+        'stock.location.route', string='Outbound Route',
+        domain=[('rma_selectable', '=', True)])

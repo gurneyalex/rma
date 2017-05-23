@@ -100,34 +100,34 @@
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
+                        <group name="operation" string="Operation">
+                            <field name="operation_id" domain="[('type','=','supplier')]"/>
+                            <field name="refund_policy"/>
+                            <field name="receipt_policy"/>
+                            <field name="delivery_policy"/>
+                            <field name="invoice_line_id" invisible="True"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page name="operation" string="Operation">
+                        <page name="route" string="Routes">
                             <group>
-                                <group name="operation" string="Operation">
-                                    <field name="operation_id" domain="[('type','=','supplier')]"/>
-                                    <field name="refund_policy"/>
-                                    <field name="receipt_policy"/>
-                                    <field name="delivery_policy"/>
-                                    <field name="invoice_line_id" invisible="True"/>
-                                </group>
-                                <group name="warehouse" string="Warehouse">
-                                    <field name="warehouse_id"/>
-                                    <field name="location_id"
-                                           domain="[('warehouse_id', '=', warehouse_id),
-                                                    ('usage', '=', 'internal')]"/>
-                                    <field name="supplier_location_id"/>
-                                    <field name="delivery_address_id"
-                                           groups='rma.group_rma_delivery_invoice_address'/>
-                                    <field name="invoice_address_id"
-                                           groups='rma.group_rma_delivery_invoice_address'/>
-                                    <field name="route_id"/>
-                                </group>
-                                <group name="dropship" string="Dropship">
-                                    <field name="is_dropship"/>
-                                    <field name="partner_address_id"
-                                           attrs="{'required':[('is_dropship', '=', True)],
-                                                   'invisible':[('is_dropship', '=', False)]}"/>
+                                <group>
+                                    <group name="inbound" string="Inbound">
+                                        <field name="in_warehouse_id"/>
+                                        <field name="location_id"
+                                               domain="[('warehouse_id', '=', in_warehouse_id),
+                                                        ('usage', '=', 'internal')]"/>
+                                        <field name="in_route_id"/>
+                                        <field name="supplier_to_customer"/>
+                                    </group>
+                                    <group name="outbound" string="Outbound">
+                                        <field name="out_warehouse_id"/>
+                                        <field name="delivery_address_id"
+                                               groups='rma.group_rma_delivery_invoice_address'/>
+                                        <field name="invoice_address_id"
+                                               groups='rma.group_rma_delivery_invoice_address'/>
+                                        <field name="out_route_id"/>
+                                    </group>
                                 </group>
                             </group>
                         </page>
@@ -219,35 +219,37 @@
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom" readonly="1"/>
                         </group>
+                        <group name="operation" string="Operation">
+                            <field name="operation_id" domain="[('type','=','customer')]"/>
+                            <field name="refund_policy"/>
+                            <field name="receipt_policy"/>
+                            <field name="delivery_policy"/>
+                            <field name="invoice_line_id" invisible="True"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page name="operation" string="Operation">
+                        <page name="route" string="Routes">
                             <group>
-                                <group name="operation" string="Operation">
-                                    <field name="operation_id" domain="[('type','=','customer')]"/>
-                                    <field name="refund_policy"/>
-                                    <field name="receipt_policy"/>
-                                    <field name="delivery_policy"/>
-                                    <field name="invoice_line_id" invisible="True"/>
-                                </group>
-                                <group name="warehouse" string="Warehouse">
-                                    <field name="warehouse_id"/>
-                                    <field name="location_id"
-                                           domain="[('warehouse_id', '=', warehouse_id),
-                                                    ('usage', '=', 'internal')]"/>
-                                    <field name="customer_location_id"/>
-                                    <field name="delivery_address_id"
-                                           groups='rma.group_rma_delivery_invoice_address'/>
-                                    <field name="invoice_address_id"
-                                           groups='rma.group_rma_delivery_invoice_address'/>
-
-                                    <field name="route_id"/>
-                                </group>
-                                <group name="dropship" string="Dropship">
-                                    <field name="is_dropship"/>
-                                    <field name="partner_address_id"
-                                           attrs="{'required':[('is_dropship', '=', True)],
-                                                   'invisible':[('is_dropship', '=', False)]}"/>
+                                <group>
+                                    <group name="inbound" string="Inbound">
+                                        <field name="in_warehouse_id"/>
+                                        <field name="location_id"
+                                               domain="[('warehouse_id', '=', in_warehouse_id),
+                                                        ('usage', '=', 'internal')]"/>
+                                        <field name="in_route_id"/>
+                                        <field name="customer_to_supplier"/>
+                                        <field name="partner_address_id"
+                                               attrs="{'required':[('customer_to_supplier', '=', True)],
+                                                       'invisible':[('customer_to_supplier', '=', False)]}"/>
+                                    </group>
+                                    <group name="outbound" string="Outbound">
+                                        <field name="out_warehouse_id"/>
+                                        <field name="delivery_address_id"
+                                               groups='rma.group_rma_delivery_invoice_address'/>
+                                        <field name="invoice_address_id"
+                                               groups='rma.group_rma_delivery_invoice_address'/>
+                                        <field name="out_route_id"/>
+                                    </group>
                                 </group>
                             </group>
                         </page>
@@ -316,7 +318,7 @@
             <field name="res_model">rma.order.line</field>
             <field name="domain">[('state','in', ['approved', 'done']),
                 ('type','=', 'customer'),
-                ('is_dropship','=', False)
+                ('customer_to_supplier','=', False)
                 ]</field>
             <field name="context">{"search_default_assigned_to":uid}</field>
             <field name="view_type">form</field>

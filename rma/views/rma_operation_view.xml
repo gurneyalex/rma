@@ -11,8 +11,6 @@
                     <field name="refund_policy"/>
                     <field name="receipt_policy"/>
                     <field name="delivery_policy"/>
-                    <field name="route_id"/>
-                    <field name="is_dropship"/>
                 </tree>
             </field>
         </record>
@@ -35,19 +33,19 @@
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
                         </group>
-                        <group name="routes"
-                               string="Routes">
-                            <field name="route_id"/>
-                            <field name="warehouse_id"/>
+                        <group name="inbound" string="Inbound">
+                            <field name="in_route_id"/>
+                            <field name="in_warehouse_id"/>
                             <field name="location_id"
-                                domain="[('warehouse_id', '=', warehouse_id),
+                                domain="[('warehouse_id', '=', in_warehouse_id),
                                          ('usage', '=', 'internal')]"/>
-                            <field name="customer_location_id"
-                                attrs="{'invisible':[('type', '=', 'supplier')]}"/>
-                            <field name="supplier_location_id"
-                                attrs="{'invisible':[('type', '=', 'customer')]}"/>
-                            <field name="is_dropship"
-                                   string="Receive in Supplier's Address"
+                            <field name="customer_to_supplier"
+                                   attrs="{'invisible':[('type', '=', 'customer')]}"/>
+                        </group>
+                        <group name="outbound" string="Outbound">
+                            <field name="out_route_id"/>
+                            <field name="out_warehouse_id"/>
+                            <field name="supplier_to_customer"
                                    attrs="{'invisible':[('type', '=', 'supplier')]}"/>
                         </group>
                     </group>

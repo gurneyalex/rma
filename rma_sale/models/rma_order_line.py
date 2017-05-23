@@ -20,8 +20,8 @@ class RmaOrderLine(models.Model):
         string="Sale Policy", default=_default_sale_type)
 
     @api.one
-    @api.depends('sale_line_ids', 'operation_id', 'sale_type',
-                 'product_id', 'product_qty')
+    @api.depends('sale_line_ids', 'sale_type', 'sales_count',
+                 'sale_line_ids.state')
     def _compute_qty_to_sell(self):
         if self.sale_type == 'no':
             self.qty_to_sell = 0.0
@@ -35,7 +35,8 @@ class RmaOrderLine(models.Model):
             self.qty_to_sell = 0.0
 
     @api.one
-    @api.depends('sale_line_ids')
+    @api.depends('sale_line_ids', 'sale_type', 'sales_count',
+                 'sale_line_ids.state')
     def _compute_qty_sold(self):
         self.qty_sold = self._get_rma_sold_qty()
 
@@ -66,6 +67,11 @@ class RmaOrderLine(models.Model):
         readonly=True, compute=_compute_qty_sold,
         store=True)
 
+    sale_type = fields.Selection([
+        ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
+        ('received', 'Based on Received Quantities')],
+        string="Sale Policy", default='no', required=True)
+
     sales_count = fields.Integer(compute=_compute_sales_count,
                                  string='# of Sales', copy=False, default=0)
 
@@ -83,10 +89,7 @@ class RmaOrderLine(models.Model):
     def _get_rma_sold_qty(self):
         self.ensure_one()
         qty = 0.0
-        for sale_line in self.sale_line_ids:
-            if self.type == 'customer':
-                qty += sale_line.product_uom_qty
-            else:
-                qty = 0.0
-
+        for sale_line in self.sale_line_ids.filtered(
+                lambda p: p.state not in ('draft', 'sent', 'cancel')):
+            qty += sale_line.product_uom_qty
         return qty

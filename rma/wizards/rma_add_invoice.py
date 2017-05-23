@@ -57,7 +57,7 @@ class RmaAddinvoice(models.TransientModel):
         data = {
             'invoice_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.name,
+            'name': line.product_id.description_purchase,
             'origin': line.invoice_id.number,
             'uom_id': line.uom_id.id,
             'operation_id': operation,
@@ -70,7 +70,8 @@ class RmaAddinvoice(models.TransientModel):
         }
         if operation:
             data.update(
-                {'route_id': operation.route_id.id,
+                {'in_route_id': operation.in_route_id.id,
+                 'out_route_id': operation.out_route_id.id,
                  'receipt_policy': operation.receipt_policy,
                  'location_id': operation.location_id.id,
                  'refund_policy': operation.refund_policy,

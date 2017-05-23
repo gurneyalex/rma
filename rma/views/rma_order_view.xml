@@ -100,6 +100,7 @@
                         </button>
                         <button type="object" name="action_view_supplier_lines"
                                 class="oe_stat_button"
+                                attrs="{'invisible':[('supplier_line_count', '=', 0)]}"
                                 icon="fa-list"
                                 groups="rma.group_rma_supplier_user">
                             <field name="supplier_line_count" widget="statinfo"
@@ -321,7 +322,8 @@
             <field name="res_model">rma.order</field>
             <field name="view_type">form</field>
             <field name="domain">[('type','=', 'customer')]</field>
-            <field name="context">{'customer':1}</field>
+            <field name="context">{"search_default_assigned_to":uid,
+                'customer':1}</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_tree"/>
         </record>
@@ -331,7 +333,8 @@
             <field name="res_model">rma.order</field>
             <field name="view_type">form</field>
             <field name="domain">[('type','=', 'supplier')]</field>
-            <field name="context">{'supplier':1}</field>
+            <field name="context">{"search_default_assigned_to":uid,
+                'supplier':1}</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_supplier_tree"/>
         </record>

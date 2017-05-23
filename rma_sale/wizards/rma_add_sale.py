@@ -57,11 +57,13 @@ class RmaAddSale(models.TransientModel):
         data = {
             'sale_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.name,
+            'name': line.product_id.description_purchase,
             'origin': line.order_id.name,
             'uom_id': line.product_uom.id,
             'operation_id': operation,
             'product_qty': line.product_uom_qty,
+            'delivery_address_id': self.sale_id.partner_id.id,
+            'invoice_address_id': self.sale_id.partner_id.id,
             'price_unit': line.currency_id.compute(
                 line.price_unit, line.currency_id, round=False),
             'rma_id': self.rma_id.id

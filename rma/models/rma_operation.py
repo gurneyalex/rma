@@ -40,22 +40,24 @@ class RmaOperation(models.Model):
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
         string="Delivery Policy", default='no')
-    route_id = fields.Many2one(
-        'stock.location.route', string='Route',
+    in_route_id = fields.Many2one(
+        'stock.location.route', string='Inbound Route',
         domain=[('rma_selectable', '=', True)])
-    is_dropship = fields.Boolean('Dropship', default=False)
-    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
-                                   default=_default_warehouse_id)
+    out_route_id = fields.Many2one(
+        'stock.location.route', string='Outbound Route',
+        domain=[('rma_selectable', '=', True)])
+    customer_to_supplier= fields.Boolean(
+        'The customer will send to the supplier', default=False)
+    supplier_to_customer = fields.Boolean(
+        'The supplier will send to the customer', default=False)
+    in_warehouse_id = fields.Many2one('stock.warehouse',
+                                      string='Inbound Warehouse',
+                                      default=_default_warehouse_id)
+    out_warehouse_id = fields.Many2one('stock.warehouse',
+                                       string='Outbound Warehouse',
+                                       default=_default_warehouse_id)
     location_id = fields.Many2one(
-        'stock.location', 'Sent To This Company Location')
-    customer_location_id = fields.Many2one(
-        'stock.location', 'Sent To This Customer Location',
-        domain=[('usage', '=', 'customer')],
-        default=_default_customer_location_id)
-    supplier_location_id = fields.Many2one(
-        'stock.location', 'Sent To This Supplier Location',
-        domain=[('usage', '=', 'supplier')],
-        default=_default_supplier_location_id)
+        'stock.location', 'Send To This Company Location')
     type = fields.Selection([
         ('customer', 'Customer'), ('supplier', 'Supplier')],
         string="Used in RMA of this type", required=True, default='customer')

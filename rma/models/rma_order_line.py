@@ -73,16 +73,30 @@ class RmaOrderLine(models.Model):
         return self.env['res.partner'].search([], limit=1)
 
     @api.model
-    def _default_route_id(self):
+    def _default_in_route_id(self):
         if self.operation_id:
-            return self.operation_id.route_id
+            return self.operation_id.in_route_id
         return self.env['stock.location.route'].search([], limit=1)
 
     @api.model
-    def _default_is_dropship(self):
+    def _default_out_route_id(self):
         if self.operation_id:
-            return self.operation_id.is_dropship
-        return False
+            return self.operation_id.out_route_id
+        return self.env['stock.location.route'].search([], limit=1)
+
+
+    @api.model
+    def _default_customer_to_supplier(self):
+        if self.operation_id:
+            return self.operation_id.customer_to_supplier
+        else:
+            return False
+    @api.model
+    def _default_supplier_to_customer(self):
+        if self.operation_id:
+            return self.operation_id.customer_to_supplier
+        else:
+            return False
 
     @api.one
     def _compute_in_shipment_count(self):
@@ -153,7 +167,7 @@ class RmaOrderLine(models.Model):
     def _compute_qty_to_receive(self):
         if self.receipt_policy == 'no' or (
                 self.type == 'supplier' and
-                    self.is_dropship):
+                    self.customer_to_supplier):
             self.qty_to_receive = 0.0
         elif self.receipt_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), True, False)
@@ -175,7 +189,7 @@ class RmaOrderLine(models.Model):
     def _compute_qty_to_deliver(self):
         if self.delivery_policy == 'no' or (
                 self.type == 'customer' and
-                    self.is_dropship):
+                    self.supplier_to_customer):
             self.qty_to_deliver = 0.0
         elif self.delivery_policy == 'ordered':
             qty = self._get_rma_move_qty(('done'), False, True)
@@ -333,42 +347,40 @@ class RmaOrderLine(models.Model):
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id)
     type = fields.Selection(related='rma_id.type')
-    route_id = fields.Many2one('stock.location.route', string='Route',
-                               domain=[('rma_selectable', '=', True)])
-    is_dropship = fields.Boolean('Dropship', default=False)
-
+    customer_to_supplier= fields.Boolean(
+        'The customer will send to the supplier',
+        default=_default_customer_to_supplier)
+    supplier_to_customer = fields.Boolean(
+        'The supplier will send to the customer',
+        default=_default_supplier_to_customer)
     refund_policy = fields.Selection([
         ('no', 'No refund'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')], string="Refund Policy",
-        default=_default_refund_policy)
+        default=_default_refund_policy, required=True)
     receipt_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Delivered Quantities')],
-        default=_default_receipt_policy,
+        default=_default_receipt_policy, required=True,
         string="Receipts Policy")
     delivery_policy = fields.Selection([
         ('no', 'Not required'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')],
-        default=_default_delivery_policy,
+        default=_default_delivery_policy, required=True,
         string="Delivery Policy")
-    route_id = fields.Many2one(
-        'stock.location.route', string='Route',
-        default=_default_route_id,
+    in_route_id = fields.Many2one(
+        'stock.location.route', string='Inbound Route',
         domain=[('rma_selectable', '=', True)])
-    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
-                                   states={'draft': [('readonly', False)]},
-                                   default=_default_warehouse_id)
-    location_id = fields.Many2one('stock.location',
-                                  'Sent To This Company Location',
-                                  default=_default_location_id)
-    supplier_location_id = fields.Many2one('stock.location',
-                                  'Sent To This Supplier Location',
-                                  domain=[('usage', '=', 'supplier')],
-                                  default= _default_customer_location_id)
-    customer_location_id = fields.Many2one('stock.location',
-                                  'Sent To This Customer Location',
-                                  domain=[('usage', '=', 'customer')],
-                                  default=_default_supplier_location_id)
+    out_route_id = fields.Many2one(
+        'stock.location.route', string='Outbound Route',
+        domain=[('rma_selectable', '=', True)])
+    in_warehouse_id = fields.Many2one('stock.warehouse',
+                                      string='Inbound Warehouse',
+                                      default=_default_warehouse_id)
+    out_warehouse_id = fields.Many2one('stock.warehouse',
+                                       string='Outbound Warehouse',
+                                       default=_default_warehouse_id)
+    location_id = fields.Many2one(
+        'stock.location', 'Send To This Company Location')
     parent_id = fields.Many2one(
         'rma.order.line', string='Parent RMA line', ondelete='cascade')
     children_ids = fields.One2many('rma.order.line', 'parent_id')
@@ -434,13 +446,14 @@ class RmaOrderLine(models.Model):
         self.receipt_policy = self.operation_id.receipt_policy
         self.delivery_policy = self.operation_id.delivery_policy
         self.refund_policy = self.operation_id.refund_policy
-        self.warehouse_id = self.operation_id.warehouse_id
+        self.in_warehouse_id = self.operation_id.in_warehouse_id
+        self.out_warehouse_id = self.operation_id.out_warehouse_id
         self.location_id = self.operation_id.location_id or \
-                           self.warehouse_id.lot_rma_id
-        self.is_dropship = self.operation_id.is_dropship
-        self.route_id = self.operation_id.route_id
-        self.customer_location_id = self.operation_id.customer_location_id
-        self.supplier_location_id = self.operation_id.supplier_location_id
+                           self.in_warehouse_id.lot_rma_id
+        self.customer_to_supplier = self.operation_id.customer_to_supplier
+        self.supplier_to_customer = self.operation_id.supplier_to_customer
+        self.in_route_id = self.operation_id.in_route_id
+        self.out_route_id = self.operation_id.out_route_id
 
     @api.onchange('invoice_line_id')
     def _onchange_invoice_line_id(self):
@@ -469,7 +482,7 @@ class RmaOrderLine(models.Model):
         res = self.env.ref('account.invoice_form', False)
         result['views'] = [(res and res.id or False, 'form')]
         result['view_id'] = res and res.id or False
-        result['res_id'] = self.invoice_line_id.id
+        result['res_id'] = self.invoice_line_id.invoice_id.id
 
         return result
 

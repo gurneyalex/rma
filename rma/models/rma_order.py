@@ -325,6 +325,21 @@ class RmaOrder(models.Model):
         return existing_lines
 
     @api.model
+    def prepare_rma_line(self, origin_rma, rma_id, line):
+        line_values = {
+            'origin': origin_rma.name,
+            'name': line.name,
+            'delivery_address_id':
+                line.delivery_address_id.id,
+            'invoice_address_id':
+                line.invoice_address_id.id,
+            'product_id': line.product_id.id,
+            'parent_id': line.id,
+            'product_qty': line.product_qty,
+            'rma_id': rma_id.id}
+        return line_values
+
+    @api.model
     def _create_supplier_rma(self, origin_rma, lines):
         partners = lines.mapped('partner_address_id')
         for partner in partners:
@@ -353,16 +368,13 @@ class RmaOrder(models.Model):
                     for child_id in line.children_ids:
                         if child_id.parent_id and child_id.parent_id.id:
                             if child_id.parent_id.id != line.id:
-                                line_values = {
-                                    'origin': origin_rma.name,
-                                    'name': line.name,
-                                    'partner_address_id':
-                                        origin_rma.delivery_address_id.id,
-                                    'product_id': line.product_id.id,
-                                    'parent_id': line.id,
-                                    'product_qty': line.product_qty,
-                                    'rma_id': rma_id.id}
+                                line_values = self.prepare_rma_line(
+                                    origin_rma, rma_id, line)
                                 self.env['rma.order.line'].create(line_values)
+                else:
+                    line_values = self.prepare_rma_line(
+                        origin_rma, rma_id, line)
+                    self.env['rma.order.line'].create(line_values)
         return True
 
     @api.multi
@@ -372,7 +384,8 @@ class RmaOrder(models.Model):
             rec.state = 'approved'
             # Only customer RMA can create supplier RMA
             if rec.type == 'customer':
-                lines = rec.rma_line_ids.filtered(lambda p: p.is_dropship)
+                lines = rec.rma_line_ids.filtered(
+                    lambda p: p.customer_to_supplier)
                 if lines:
                     self._create_supplier_rma(rec, lines)
         return True
@@ -417,10 +430,10 @@ class RmaOrder(models.Model):
         lines = self.rma_line_ids
         related_lines = [line.id for line in lines.children_ids]
         # choose the view_mode accordingly
-        if len(lines) != 1:
+        if len(related_lines) != 1:
             result['domain'] = "[('id', 'in', " + \
                                str(related_lines) + ")]"
-        elif len(lines) == 1:
+        elif len(related_lines) == 1:
             res = self.env.ref('rma.view_rma_line_supplier_form', False)
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = related_lines[0]
