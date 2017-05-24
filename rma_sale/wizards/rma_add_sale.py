@@ -57,7 +57,7 @@ class RmaAddSale(models.TransientModel):
         data = {
             'sale_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.product_id.description_purchase,
+            'name': line.product_id.name_template,
             'origin': line.order_id.name,
             'uom_id': line.product_uom.id,
             'operation_id': operation,

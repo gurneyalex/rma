@@ -57,7 +57,7 @@ class RmaAddinvoice(models.TransientModel):
         data = {
             'invoice_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.product_id.description_purchase,
+            'name': line.product_id.name_template,
             'origin': line.invoice_id.number,
             'uom_id': line.uom_id.id,
             'operation_id': operation,
