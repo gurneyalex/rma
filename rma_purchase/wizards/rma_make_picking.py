@@ -16,21 +16,21 @@ class RmaMakePicking(models.TransientModel):
         res['purchase_order_line_id'] = line.purchase_order_line_id.id
         return res
 
-    @api.multi
-    def action_create_picking(self):
-        procurements = self._create_picking()
+    @api.model
+    def _get_action(self, pickings, procurements):
         po_list = []
-        action = self.env.ref('purchase.purchase_rfq')
-        result = action.read()[0]
         for procurement in procurements:
             if procurement.purchase_id and \
                     procurement.purchase_id.id:
                 po_list.append(procurement.purchase_id.id)
         if len(po_list):
+            action = self.env.ref('purchase.purchase_rfq')
+            result = action.read()[0]
             result['domain'] = [('id', 'in', po_list)]
             return result
         else:
-            action = procurements.do_view_pickings()
+            action = super(RmaMakePicking, self)._get_action(pickings,
+                                                             procurements)
             return action
 
 

@@ -181,6 +181,26 @@ class RmaMakePicking(models.TransientModel):
         procurements = self.env['procurement.order'].browse(procurement_list)
         return procurements
 
+    @api.model
+    def _get_action(self, pickings, procurements):
+        if pickings:
+            action = procurements.do_view_pickings()
+        else:
+            action = self.env.ref(
+                'procurement.procurement_order_action_exceptions')
+            action = action.read()[0]
+            # choose the view_mode accordingly
+            procurement_ids = procurements.ids
+            if len(procurement_ids) != 1:
+                action['domain'] = "[('id', 'in', " + \
+                                   str(procurement_ids) + ")]"
+            elif len(procurements) == 1:
+                res = self.env.ref('procurement.procurement_form_view',
+                                   False)
+                action['views'] = [(res and res.id or False, 'form')]
+                action['res_id'] = procurement_ids[0]
+        return action
+
     @api.multi
     def action_create_picking(self):
         procurements = self._create_picking()
@@ -191,22 +211,8 @@ class RmaMakePicking(models.TransientModel):
         if len(groups):
             pickings =self.env['stock.picking'].search(
                 [('group_id','in', groups)])
-            if pickings:
-                action = procurements.do_view_pickings()
-            else:
-                action = self.env.ref(
-                    'procurement.procurement_order_action_exceptions')
-                action = action.read()[0]
-                # choose the view_mode accordingly
-                procurement_ids = procurements.ids
-                if len(procurement_ids) != 1:
-                    action['domain'] = "[('id', 'in', " + \
-                                       str(procurement_ids) + ")]"
-                elif len(procurements) == 1:
-                    res = self.env.ref('procurement.procurement_form_view',
-                                       False)
-                    action['views'] = [(res and res.id or False, 'form')]
-                    action['res_id'] = procurement_ids[0]
+
+        action = self._get_action(pickings, procurements)
         return action
 
     @api.multi

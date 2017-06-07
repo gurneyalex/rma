@@ -68,15 +68,26 @@ class RmaAddSale(models.TransientModel):
                 line.price_unit, line.currency_id, round=False),
             'rma_id': self.rma_id.id
         }
-        if operation:
-            data.update(
-                {'route_id': operation.route_id.id or False,
-                 'receipt_policy': operation.receipt_policy or False,
-                 'location_id': operation.location_id.id or \
-                                line.warehouse_id.lot_rma_id.id,
-                 'refund_policy': operation.refund_policy or False,
-                 'delivery_policy': operation.delivery_policy or False,
-                 'id_dropship': operation.id_dropship or False})
+        if not operation:
+            operation = self.env['rma.operation'].search(
+                [('type', '=', self.rma_id.type)], limit=1)
+            if not operation:
+                raise ValidationError("Please define an operation first")
+        if not operation.in_route_id or not operation.out_route_id:
+            route = self.env['stock.location.route'].search(
+                [('rma_selectable', '=', True)], limit=1)
+            if not route:
+                raise ValidationError("Please define an rma route")
+        data.update(
+            {'in_route_id': operation.in_route_id.id or route,
+             'out_route_id': operation.out_route_id.id or route,
+             'receipt_policy': operation.receipt_policy,
+             'location_id': operation.location_id.id or
+                            self.env.ref('stock.stock_location_stock').id,
+             'operation_id': operation.id,
+             'refund_policy': operation.refund_policy,
+             'delivery_policy': operation.delivery_policy
+             })
         return data
 
     @api.model

@@ -13,6 +13,7 @@ from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
 class RmaOrderLine(models.Model):
     _name = "rma.order.line"
+    _rec_name = "rma_id"
 
     @api.model
     def _default_warehouse_id(self):
@@ -369,18 +370,22 @@ class RmaOrderLine(models.Model):
         string="Delivery Policy")
     in_route_id = fields.Many2one(
         'stock.location.route', string='Inbound Route',
+        required=True,
         domain=[('rma_selectable', '=', True)])
     out_route_id = fields.Many2one(
         'stock.location.route', string='Outbound Route',
+        required=True,
         domain=[('rma_selectable', '=', True)])
     in_warehouse_id = fields.Many2one('stock.warehouse',
                                       string='Inbound Warehouse',
+                                      required=True,
                                       default=_default_warehouse_id)
     out_warehouse_id = fields.Many2one('stock.warehouse',
                                        string='Outbound Warehouse',
+                                       required=True,
                                        default=_default_warehouse_id)
     location_id = fields.Many2one(
-        'stock.location', 'Send To This Company Location')
+        'stock.location', 'Send To This Company Location', required=True)
     parent_id = fields.Many2one(
         'rma.order.line', string='Parent RMA line', ondelete='cascade')
     children_ids = fields.One2many('rma.order.line', 'parent_id')

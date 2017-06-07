@@ -68,15 +68,26 @@ class RmaAddinvoice(models.TransientModel):
             'invoice_address_id': self.invoice_id.partner_id.id,
             'rma_id': self.rma_id.id
         }
-        if operation:
-            data.update(
-                {'in_route_id': operation.in_route_id.id,
-                 'out_route_id': operation.out_route_id.id,
-                 'receipt_policy': operation.receipt_policy,
-                 'location_id': operation.location_id.id,
-                 'refund_policy': operation.refund_policy,
-                 'delivery_policy': operation.delivery_policy,
-                 'id_dropship': operation.id_dropship})
+        if not operation:
+            operation = self.env['rma.operation'].search(
+                [('type', '=', self.rma_id.type)], limit=1)
+            if not operation:
+                raise ValidationError("Please define an operation first")
+        if not operation.in_route_id or not operation.out_route_id:
+            route = self.env['stock.location.route'].search(
+                [('rma_selectable', '=', True)], limit=1)
+            if not route:
+                raise ValidationError("Please define an rma route")
+        data.update(
+            {'in_route_id': operation.in_route_id.id or route,
+             'out_route_id': operation.out_route_id.id or route,
+             'receipt_policy': operation.receipt_policy,
+             'location_id': operation.location_id.id or
+                            self.env.ref('stock.stock_location_stock').id,
+             'operation_id': operation.id,
+             'refund_policy': operation.refund_policy,
+             'delivery_policy': operation.delivery_policy
+             })
         return data
 
     @api.model
