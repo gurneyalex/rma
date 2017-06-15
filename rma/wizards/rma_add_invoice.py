@@ -49,18 +49,16 @@ class RmaAddinvoice(models.TransientModel):
 
 
     def _prepare_rma_line_from_inv_line(self, line):
-        operation = line.product_id.rma_operation_id and \
-                    line.product_id.rma_operation_id.id or False
+        operation = line.product_id.rma_operation_id or False
         if not operation:
-            operation = line.product_id.categ_id.rma_operation_id and \
-                        line.product_id.categ_id.rma_operation_id.id or False
+            operation = line.product_id.categ_id.rma_operation_id or False
         data = {
             'invoice_line_id': line.id,
             'product_id': line.product_id.id,
             'name': line.product_id.name_template,
             'origin': line.invoice_id.number,
             'uom_id': line.uom_id.id,
-            'operation_id': operation,
+            'operation_id': operation.id,
             'product_qty': line.quantity,
             'price_unit': line.invoice_id.currency_id.compute(
                 line.price_unit, line.currency_id, round=False),
