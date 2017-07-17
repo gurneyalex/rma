@@ -8,6 +8,7 @@
         <field name="delivery_policy">received</field>
         <field name="type">customer</field>
         <field name="in_route_id" ref="rma.route_rma_customer"/>
+        <field name="out_route_id" ref="rma.route_rma_customer"/>
     </record>
 
     <record id="rma_operation_supplier_replace" model="rma.operation">
@@ -17,6 +18,7 @@
         <field name="receipt_policy">ordered</field>
         <field name="delivery_policy">ordered</field>
         <field name="type">supplier</field>
+        <field name="in_route_id" ref="rma.route_rma_supplier"/>
         <field name="out_route_id" ref="rma.route_rma_supplier"/>
     </record>
 
@@ -31,7 +33,7 @@
     </record>
 
     <record id="rma_operation_supplier_refund" model="rma.operation">
-        <field name="name">Refund Before deliver</field>
+        <field name="name">Refund only</field>
         <field name="code">RFS</field>
         <field name="refund_policy">ordered</field>
         <field name="receipt_policy">no</field>

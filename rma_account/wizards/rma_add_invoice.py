@@ -43,15 +43,14 @@ class RmaAddinvoice(models.TransientModel):
     invoice_id = fields.Many2one(comodel_name='account.invoice',
                                  string='Invoice')
     invoice_line_ids = fields.Many2many('account.invoice.line',
-                                     'rma_add_invoice_add_line_rel',
-                                     'invoice_line_id', 'rma_add_invoice_id',
-                                     string='Invoice Lines')
-
+                                        'rma_add_invoice_add_line_rel',
+                                        'invoice_line_id',
+                                        'rma_add_invoice_id',
+                                        string='Invoice Lines')
 
     def _prepare_rma_line_from_inv_line(self, line):
-        operation = line.product_id.rma_operation_id or False
-        if not operation:
-            operation = line.product_id.categ_id.rma_operation_id or False
+        operation = line.product_id.rma_operation_id or \
+            line.product_id.categ_id.rma_operation_id
         data = {
             'invoice_line_id': line.id,
             'product_id': line.product_id.id,
@@ -77,11 +76,12 @@ class RmaAddinvoice(models.TransientModel):
             if not route:
                 raise ValidationError("Please define an rma route")
         data.update(
-            {'in_route_id': operation.in_route_id.id or route,
-             'out_route_id': operation.out_route_id.id or route,
+            {'in_route_id': operation.in_route_id.id,
+             'out_route_id': operation.out_route_id.id,
+             'in_warehouse_id': operation.in_warehouse_id.id,
+             'out_warehouse_id': operation.out_warehouse_id.id,
              'receipt_policy': operation.receipt_policy,
-             'location_id': operation.location_id.id or
-                            self.env.ref('stock.stock_location_stock').id,
+             'location_id': operation.location_id.id,
              'operation_id': operation.id,
              'refund_policy': operation.refund_policy,
              'delivery_policy': operation.delivery_policy

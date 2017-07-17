@@ -162,7 +162,7 @@
         <field name="location_src_id" ref="stock.stock_location_customers"/>
         <field name="location_id" ref="rma.location_rma"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_customer"/>
+        <field name="route_id" ref="rma.route_rma_customer"/>
         <field name="picking_type_id" ref="rma.picking_type_rma_cust_in"/>
     </record>
 
@@ -173,7 +173,7 @@
         <field name="location_src_id" ref="rma.location_rma"/>
         <field name="location_id" ref="stock.stock_location_customers"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_customer"/>
+        <field name="route_id" ref="rma.route_rma_customer"/>
         <field name="picking_type_id" ref="rma.picking_type_rma_cust_out"/>
     </record>
 
@@ -184,7 +184,7 @@
         <field name="location_id" ref="stock.stock_location_suppliers"/>
         <field name="location_src_id" ref="rma.location_rma"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_supplier"/>
+        <field name="route_id" ref="rma.route_rma_supplier"/>
         <field name="picking_type_id" ref="rma.picking_type_rma_sup_out"/>
     </record>
 
@@ -195,7 +195,7 @@
         <field name="location_id" ref="rma.location_rma"/>
         <field name="location_src_id" ref="stock.stock_location_suppliers"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_supplier"/>
+        <field name="route_id" ref="rma.route_rma_supplier"/>
         <field name="picking_type_id" ref="rma.picking_type_rma_sup_in"/>
     </record>
 
@@ -206,7 +206,7 @@
         <field name="location_id" ref="stock.stock_location_suppliers"/>
         <field name="location_src_id" ref="stock.stock_location_customers"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_dropship"/>
+        <field name="route_id" ref="rma.route_rma_dropship"/>
         <field name="picking_type_id"
                ref="rma.picking_type_rma_dropship_return"/>
     </record>
@@ -218,7 +218,7 @@
         <field name="location_id" ref="stock.stock_location_customers"/>
         <field name="location_src_id" ref="stock.stock_location_suppliers"/>
         <field name="procure_method">make_to_stock</field>
-        <field name="in_route_id" ref="rma.route_rma_dropship"/>
+        <field name="route_id" ref="rma.route_rma_dropship"/>
         <field name="picking_type_id"
                ref="rma.picking_type_rma_dropship"/>
     </record>

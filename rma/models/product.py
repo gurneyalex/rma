@@ -14,6 +14,7 @@ class ProductCategory(models.Model):
     rma_operation_id = fields.Many2one(
         comodel_name="rma.operation", string="RMA Operation")
 
+
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 

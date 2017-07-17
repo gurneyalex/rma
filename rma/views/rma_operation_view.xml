@@ -8,7 +8,6 @@
                 <tree string="RMA Operations">
                     <field name="code"/>
                     <field name="name"/>
-                    <field name="refund_policy"/>
                     <field name="receipt_policy"/>
                     <field name="delivery_policy"/>
                 </tree>
@@ -29,7 +28,6 @@
                         </group>
                         <group name="policies"
                                string="Policies">
-                            <field name="refund_policy"/>
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
                         </group>
@@ -37,8 +35,7 @@
                             <field name="in_route_id"/>
                             <field name="in_warehouse_id"/>
                             <field name="location_id"
-                                domain="[('warehouse_id', '=', in_warehouse_id),
-                                         ('usage', '=', 'internal')]"/>
+                                domain="[('usage', '=', 'internal')]"/>
                             <field name="customer_to_supplier"
                                    attrs="{'invisible':[('type', '=', 'customer')]}"/>
                         </group>

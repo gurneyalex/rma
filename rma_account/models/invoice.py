@@ -8,15 +8,6 @@
 from openerp import api, fields, models
 
 
-class SaleOrder(models.Model):
-
-    _inherit = "sale.order"
-
-    @api.model
-    def create(self, vals):
-        res = super(SaleOrder, self).create(vals)
-        return res
-
 class AccountInvoice(models.Model):
 
     _inherit = "account.invoice"

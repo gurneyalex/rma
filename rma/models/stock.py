@@ -38,13 +38,3 @@ class StockMove(models.Model):
             if procurement.rma_line_id and procurement.rma_line_id.id:
                 vals['rma_line_id'] = procurement.rma_line_id.id
         return super(StockMove, self).create(vals)
-
-    # @api.model
-    # def _prepare_picking_assign(self, move):
-    #     res = super(StockMove, self)._prepare_picking_assign(move)
-    #     if 'rma' in self.env.context:
-    #         res['rma_line_id'] = self.env.context['rma']
-    #     return res
-
-    # TODO: override def _account_entry_move in stockquant to change the
-    #  accounting

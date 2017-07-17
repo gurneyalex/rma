@@ -51,6 +51,7 @@ class RmaOrderLine(models.Model):
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True, compute=_compute_qty_purchased,
         store=True)
+
     @api.multi
     def action_view_purchase_order(self):
         action = self.env.ref('purchase.purchase_rfq')

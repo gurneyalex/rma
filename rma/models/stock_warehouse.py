@@ -27,17 +27,3 @@ class StockLocationRoute(models.Model):
     _inherit = "stock.location.route"
 
     rma_selectable = fields.Boolean(string="Selectable on RMA Lines")
-
-
-class StockLocation(models.Model):
-
-    _inherit = "stock.location"
-
-    @api.one
-    @api.depends('location_id')
-    def _compute_warehouse(self):
-        self.warehouse_id = self.get_warehouse(self)
-
-    warehouse_id = fields.Many2one('stock.warehouse',
-                                   'Warehouse', compute=_compute_warehouse,
-                                   store=True)

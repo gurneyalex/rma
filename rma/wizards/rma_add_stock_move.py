@@ -1,0 +1,101 @@
+# -*- coding: utf-8 -*-
+# © 2017 Eficent Business and IT Consulting Services S.L.
+# © 2015 Eezee-It, MONK Software, Vauxoo
+# © 2013 Camptocamp
+# © 2009-2013 Akretion,
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html)
+
+from openerp import models, fields, exceptions, api, _
+from openerp.exceptions import ValidationError
+
+
+class RmaAddStockMove(models.TransientModel):
+    _name = 'rma_add_stock_move'
+    _description = 'Wizard to add rma lines from pickings'
+
+    @api.model
+    def default_get(self, fields):
+        res = super(RmaAddStockMove, self).default_get(fields)
+        rma_obj = self.env['rma.order']
+        rma_id = self.env.context['active_ids'] or []
+        active_model = self.env.context['active_model']
+        if not rma_id:
+            return res
+        assert active_model == 'rma.order', 'Bad context propagation'
+
+        rma = rma_obj.browse(rma_id)
+        res['rma_id'] = rma.id
+        res['partner_id'] = rma.partner_id.id
+        res['picking_id'] = False
+        res['move_ids'] = False
+        return res
+
+    rma_id = fields.Many2one('rma.order',
+                             string='RMA Order',
+                             readonly=True,
+                             ondelete='cascade')
+
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
+                                 readonly=True)
+
+    move_ids = fields.Many2many('stock.move',
+                                string='Stock Moves',
+                                domain="[('state', '=', 'done')]")
+
+    def _prepare_rma_line_from_stock_move(self, line):
+        operation = line.product_id.rma_operation_id or \
+            line.product_id.categ_id.rma_operation_id
+        data = {
+            'reference_move_id': line.id,
+            'product_id': line.product_id.id,
+            'name': line.product_id.name_template,
+            'origin': line.picking_id.name,
+            'uom_id': line.product_uom.id,
+            'operation_id': operation.id,
+            'product_qty': line.product_uom_qty,
+            'delivery_address_id': line.picking_id.partner_id.id,
+            'rma_id': self.rma_id.id
+        }
+        if not operation:
+            operation = self.env['rma.operation'].search(
+                [('type', '=', self.rma_id.type)], limit=1)
+            if not operation:
+                raise ValidationError("Please define an operation first")
+        if not operation.in_route_id or not operation.out_route_id:
+            route = self.env['stock.location.route'].search(
+                [('rma_selectable', '=', True)], limit=1)
+            if not route:
+                raise ValidationError("Please define an rma route")
+        data.update(
+            {'in_route_id': operation.in_route_id.id,
+             'out_route_id': operation.out_route_id.id,
+             'receipt_policy': operation.receipt_policy,
+             'operation_id': operation.id,
+             'refund_policy': operation.refund_policy,
+             'delivery_policy': operation.delivery_policy
+             })
+        if operation.in_warehouse_id:
+            data['in_warehouse_id'] = operation.in_warehouse_id.id
+        if operation.out_warehouse_id:
+            data['out_warehouse_id'] = operation.out_warehouse_id.id
+        if operation.location_id:
+            data['location_id'] = operation.location_id.id
+        return data
+
+    @api.model
+    def _get_existing_stock_moves(self):
+        existing_move_lines = []
+        for rma_line in self.rma_id.rma_line_ids:
+            existing_move_lines.append(rma_line.reference_move_id)
+        return existing_move_lines
+
+    @api.multi
+    def add_lines(self):
+        rma_line_obj = self.env['rma.order.line']
+        existing_invoice_lines = self._get_existing_stock_moves()
+        for line in self.move_ids:
+            if line not in existing_invoice_lines:
+                data = self._prepare_rma_line_from_stock_move(line)
+                rma_line_obj.with_context(
+                    default_rma_id=self.rma_id.id).create(data)
+        return {'type': 'ir.actions.act_window_close'}

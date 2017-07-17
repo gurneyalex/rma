@@ -10,7 +10,6 @@ from . import rma_operation
 from . import rma_rule
 from . import stock
 from . import stock_warehouse
-from . import invoice
 from . import product
 from . import procurement
 from . import res_company

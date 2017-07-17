@@ -26,7 +26,6 @@ class RmaMakePicking(models.TransientModel):
                   'type': line.type,
                   'company_id': line.company_id.id,
                   'operation_id': line.operation_id.id,
-                  'invoice_line_id': line.invoice_line_id.id,
                   'partner_address_id': line.partner_address_id.id,
                   'in_route_id': line.in_route_id.id,
                   'out_route_id': line.out_route_id.id,

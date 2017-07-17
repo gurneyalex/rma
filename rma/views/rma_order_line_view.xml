@@ -63,18 +63,6 @@
                             <field name="out_shipment_count" widget="statinfo"
                                    string="Deliveries"/>
                         </button>
-                        <button type="object"  name="action_view_refunds"
-                                class="oe_stat_button"
-                                icon="fa-pencil-square-o"
-                                groups="account.group_account_user">
-                            <field name="refund_count" widget="statinfo"
-                                   string="Refunds"/>
-                        </button>
-                        <button type="object"  name="action_view_invoice"
-                                class="oe_stat_button"
-                                icon="fa-pencil-square-o"
-                                string="Origin Inv">
-                        </button>
                         <button type="object" name="action_view_procurements"
                                 class="oe_stat_button"
                                 icon="fa-warning"
@@ -87,6 +75,7 @@
                         <group name="rma" string="Order">
                             <field name="rma_id" readonly="1"/>
                             <field name="origin"/>
+                            <field name="reference_move_id"/>
                             <field name="state" invisible="1"/>
                             <field name="name" invisible="1"/>
                         </group>
@@ -94,22 +83,21 @@
                             <field name="requested_by" readonly="1"/>
                             <field name="assigned_to" readonly="1"/>
                         </group>
-                        <group name="product" string="Product">
+                        <group name="product" string="Product" colspan="2">
                             <field name="product_id"/>
                             <field name="product_qty"/>
                             <field name="price_unit"/>
-                            <field name="uom_id" groups="product.group_uom" readonly="1"/>
+                            <field name="uom_id" groups="product.group_uom"/>
                         </group>
-                        <group name="operation" string="Operation">
-                            <field name="operation_id" domain="[('type','=','supplier')]"/>
-                            <field name="refund_policy"/>
+                        <group name="operation" string="Operation" colspan="2">
+                            <field name="operation_id"
+                                   domain="[('type','=','supplier')]"/>
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
-                            <field name="invoice_line_id" invisible="True"/>
                         </group>
                     </group>
                     <notebook>
-                        <page name="route" string="Routes">
+                        <page name="route" string="Routes" groups="stock.group_adv_location">
                             <group>
                                 <group>
                                     <group name="inbound" string="Inbound">
@@ -124,8 +112,6 @@
                                         <field name="out_warehouse_id"/>
                                         <field name="delivery_address_id"
                                                groups='rma.group_rma_delivery_invoice_address'/>
-                                        <field name="invoice_address_id"
-                                               groups='rma.group_rma_delivery_invoice_address'/>
                                         <field name="out_route_id"/>
                                     </group>
                                 </group>
@@ -133,9 +119,6 @@
                         </page>
                         <page name="stock" string="Stock Moves">
                             <field name="move_ids" nolabel="1" readonly="1"/>
-                        </page>
-                        <page name="refunds" string="Refunds">
-                            <field name="refund_line_ids" nolabel="1"/>
                         </page>
                         <page name="quantities" string="Quantities">
                             <group>
@@ -149,10 +132,6 @@
                                         <field name="qty_to_deliver"/>
                                         <field name="qty_outgoing"/>
                                         <field name="qty_delivered"/>
-                                    </group>
-                                    <group name="refund">
-                                        <field name="qty_to_refund"/>
-                                        <field name="qty_refunded"/>
                                     </group>
                                 </group>
                             </group>
@@ -182,13 +161,6 @@
                             <field name="out_shipment_count" widget="statinfo"
                                    string="Deliveries"/>
                         </button>
-                        <button type="object"  name="action_view_refunds"
-                                class="oe_stat_button"
-                                icon="fa-pencil-square-o"
-                                groups="account.group_account_user">
-                            <field name="refund_count" widget="statinfo"
-                                   string="Refunds"/>
-                        </button>
                         <button type="object"  name="action_view_invoice"
                                 class="oe_stat_button"
                                 icon="fa-pencil-square-o"
@@ -206,6 +178,7 @@
                         <group name="rma" string="Order">
                             <field name="rma_id" readonly="1"/>
                             <field name="origin"/>
+                            <field name="reference_move_id"/>
                             <field name="state" invisible="1"/>
                             <field name="name" invisible="1"/>
                         </group>
@@ -217,18 +190,16 @@
                             <field name="product_id"/>
                             <field name="product_qty"/>
                             <field name="price_unit"/>
-                            <field name="uom_id" groups="product.group_uom" readonly="1"/>
+                            <field name="uom_id" groups="product.group_uom"/>
                         </group>
                         <group name="operation" string="Operation">
                             <field name="operation_id" domain="[('type','=','customer')]"/>
-                            <field name="refund_policy"/>
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
-                            <field name="invoice_line_id" invisible="True"/>
                         </group>
                     </group>
                     <notebook>
-                        <page name="route" string="Routes">
+                        <page name="route" string="Routes" groups="stock.group_adv_location">
                             <group>
                                 <group>
                                     <group name="inbound" string="Inbound">
@@ -246,8 +217,6 @@
                                         <field name="out_warehouse_id"/>
                                         <field name="delivery_address_id"
                                                groups='rma.group_rma_delivery_invoice_address'/>
-                                        <field name="invoice_address_id"
-                                               groups='rma.group_rma_delivery_invoice_address'/>
                                         <field name="out_route_id"/>
                                     </group>
                                 </group>
@@ -255,9 +224,6 @@
                         </page>
                         <page name="stock" string="Stock Moves">
                             <field name="move_ids" nolabel="1" readonly="1"/>
-                        </page>
-                        <page name="refunds" string="Refunds">
-                            <field name="refund_line_ids" nolabel="1"/>
                         </page>
                         <page name="quantities" string="Quantities">
                             <group>
@@ -271,10 +237,6 @@
                                         <field name="qty_to_deliver"/>
                                         <field name="qty_outgoing"/>
                                         <field name="qty_delivered"/>
-                                    </group>
-                                    <group name="refund">
-                                        <field name="qty_to_refund"/>
-                                        <field name="qty_refunded"/>
                                     </group>
                                 </group>
                             </group>
@@ -302,8 +264,6 @@
                                 context="{'group_by':'operation_id'}"/>
                         <filter name="product" string="Product" domain="[]"
                                 context="{'group_by':'product_id'}"/>
-                        <filter name="to_refund" string="To Refund" domain="[('qty_to_refund', '>', 0)]"
-                                context="{'group_by':'partner_id'}"/>
                         <filter name="to_receive" string="To Receive" domain="[('qty_to_receive', '>', 0)]"
                                 context="{'group_by':'partner_id'}"/>
                         <filter name="to_deliver" string="To Deliver" domain="[('qty_to_deliver', '>', 0)]"
