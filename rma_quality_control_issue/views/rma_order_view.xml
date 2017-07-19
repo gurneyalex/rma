@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2017 Eficent Business and IT Consulting Services S.L.
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+
+    <record id="view_rma_form" model="ir.ui.view">
+        <field name="name">rma.order.form</field>
+        <field name="model">rma.order</field>
+        <field name="inherit_id" ref="rma.view_rma_form"/>
+        <field name="arch" type="xml">
+            <field name="rma_line_ids" position="attributes">
+                <attribute name="context">
+                    "{'default_rma_id': active_id,
+                      'partner_id': partner_id,
+                      'default_product_id': context.get('default_product_id'),
+                      'default_origin': context.get('default_origin'),
+                      'default_product_qty': context.get('default_product_qty'),
+                      'default_location_id': context.get('default_location_id'),
+                      'default_qc_issue_id': context.get('default_qc_issue_id')}"
+                </attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_rma_supplier_form" model="ir.ui.view">
+        <field name="name">rma.order.form</field>
+        <field name="model">rma.order</field>
+        <field name="inherit_id" ref="rma.view_rma_supplier_form"/>
+        <field name="arch" type="xml">
+            <field name="rma_line_ids" position="attributes">
+                <attribute name="context">
+                    "{'form_view_ref':'rma.view_rma_line_supplier_form',
+                      'default_rma_id': active_id,
+                      'partner_id': partner_id,
+                      'default_product_id': context.get('default_product_id'),
+                      'default_origin': context.get('default_origin'),
+                      'default_product_qty': context.get('default_product_qty'),
+                      'default_location_id': context.get('default_location_id'),
+                      'default_qc_issue_id': context.get('default_qc_issue_id')}"
+                </attribute>
+            </field>
+        </field>
+    </record>
+
+
+</odoo>
