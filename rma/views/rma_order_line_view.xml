@@ -14,7 +14,7 @@
                     <field name="name"/>
                     <field name="origin"/>
                     <field name="operation_id"/>
-                    <field name="partner_address_id"/>
+                    <field name="supplier_address_id"/>
                     <field name="uom_id" groups="product.group_uom"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
@@ -35,7 +35,6 @@
                     <field name="name"/>
                     <field name="origin"/>
                     <field name="operation_id" domain="[('type','=','supplier')]"/>
-                    <field name="partner_address_id"/>
                     <field name="uom_id" groups="product.group_uom"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
@@ -85,6 +84,7 @@
                         </group>
                         <group name="product" string="Product" colspan="2">
                             <field name="product_id"/>
+                            <newline/>
                             <field name="product_qty"/>
                             <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom"/>
@@ -94,6 +94,10 @@
                                    domain="[('type','=','supplier')]"/>
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
+                        </group>
+                        <group name="company" string="Company"
+                               groups="base.group_multi_company">
+                            <field name="company_id"/>
                         </group>
                     </group>
                     <notebook>
@@ -146,6 +150,7 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <form string="Rma Line">
+                    <header/>
                     <div name="button_box" class="oe_button_box">
                         <button type="object"  name="action_view_in_shipments"
                                 class="oe_stat_button"
@@ -188,18 +193,23 @@
                         </group>
                         <group name="product" string="Product">
                             <field name="product_id"/>
+                            <newline/>
                             <field name="product_qty"/>
-                            <field name="price_unit"/>
                             <field name="uom_id" groups="product.group_uom"/>
+                            <field name="price_unit"/>
                         </group>
                         <group name="operation" string="Operation">
                             <field name="operation_id" domain="[('type','=','customer')]"/>
                             <field name="receipt_policy"/>
                             <field name="delivery_policy"/>
                         </group>
+                         <group name="company" string="Company"
+                                groups="base.group_multi_company">
+                            <field name="company_id"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page name="route" string="Routes" groups="stock.group_adv_location">
+                        <page name="route" string="Routes">
                             <group>
                                 <group>
                                     <group name="inbound" string="Inbound">
@@ -209,7 +219,7 @@
                                                         ('usage', '=', 'internal')]"/>
                                         <field name="in_route_id"/>
                                         <field name="customer_to_supplier"/>
-                                        <field name="partner_address_id"
+                                        <field name="supplier_address_id"
                                                attrs="{'required':[('customer_to_supplier', '=', True)],
                                                        'invisible':[('customer_to_supplier', '=', False)]}"/>
                                     </group>
@@ -237,6 +247,11 @@
                                         <field name="qty_to_deliver"/>
                                         <field name="qty_outgoing"/>
                                         <field name="qty_delivered"/>
+                                    </group>
+                                    <group name="supplier_rma"
+                                           attrs="{'invisible':[('customer_to_supplier','=',False)]}">
+                                        <field name="qty_to_supplier_rma"/>
+                                        <field name="qty_in_supplier_rma"/>
                                     </group>
                                 </group>
                             </group>

@@ -89,16 +89,14 @@
         <field name="model">rma.order.line</field>
         <field name="inherit_id" ref="rma.view_rma_line_form"/>
         <field name="arch" type="xml">
-            <div name="button_box" position="before">
-                <header>
+            <header position="inside">
                     <button name="%(action_rma_picking_in)d" states="approved"
                             string="Create Incoming Shipment" class="oe_highlight"
                             type="action"/>
                     <button name="%(action_rma_picking_out)d" states="approved"
                             string="Create Delivery" class="oe_highlight"
                             type="action"/>
-                </header>
-            </div>
+            </header>
         </field>
     </record>
 

@@ -14,7 +14,7 @@
 """,
     'author': 'Eficent',
     'website': 'http://www.github.com/OCA/rma',
-    'depends': ['rma', 'purchase'],
+    'depends': ['rma_account', 'purchase'],
     'data': ['views/rma_order_view.xml',
              'views/rma_order_line_view.xml',
              'wizards/rma_add_purchase.xml'],

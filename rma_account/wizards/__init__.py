@@ -7,3 +7,4 @@
 
 from . import rma_refund
 from . import rma_add_invoice
+from . import rma_order_line_make_supplier_rma

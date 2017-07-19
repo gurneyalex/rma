@@ -34,6 +34,7 @@
              'wizards/rma_make_picking_view.xml',
              'wizards/rma_add_stock_move_view.xml',
              'wizards/stock_config_settings.xml',
+             'wizards/rma_order_line_make_supplier_rma_view.xml',
              ],
     'installable': True,
     'auto_install': False,

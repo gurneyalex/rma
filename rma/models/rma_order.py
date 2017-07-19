@@ -31,30 +31,24 @@ class RmaOrder(models.Model):
 
     @api.multi
     def _compute_in_shipment_count(self):
-        self.ensure_one()
-        self.in_shipment_count = 0
-        for line in self.rma_line_ids:
-            moves = line.procurement_ids.mapped('move_ids').filtered(
-                lambda m: m.location_dest_id.usage == 'internal')
-            pickings = moves.mapped('picking_id')
-            self.in_shipment_count += len(pickings)
+        for rec in self:
+            rec.in_shipment_count = len(rec.rma_line_ids.mapped(
+                'procurement_ids.move_ids').filtered(
+                lambda m: m.location_dest_id.usage == 'internal').mapped(
+                'picking_id'))
 
     @api.multi
     def _compute_out_shipment_count(self):
-        self.ensure_one()
-        self.in_shipment_count = 0
-        for line in self.rma_line_ids:
-            moves = line.procurement_ids.mapped('move_ids').filtered(
-                lambda m: m.location_id.usage == 'internal')
-            pickings = moves.mapped('picking_id')
-            self.in_shipment_count += len(pickings)
+        for rec in self:
+            rec.out_shipment_count = len(rec.rma_line_ids.mapped(
+                'procurement_ids.move_ids').filtered(
+                lambda m: m.location_id.usage == 'internal').mapped(
+                'picking_id'))
 
     @api.multi
     def _compute_supplier_line_count(self):
-        lines = self.rma_line_ids.filtered(
-            lambda r: r.children_ids)
-        related_lines = [line.id for line in lines.children_ids]
-        self.supplier_line_count = len(related_lines)
+        self.supplier_line_count = len(self.rma_line_ids.filtered(
+            lambda r: r.supplier_rma_line_ids))
 
     @api.multi
     def _compute_line_count(self):
@@ -92,10 +86,9 @@ class RmaOrder(models.Model):
     rma_line_ids = fields.One2many('rma.order.line', 'rma_id',
                                    string='RMA lines')
     in_shipment_count = fields.Integer(compute=_compute_in_shipment_count,
-                                       string='# of Invoices', copy=False)
+                                       string='# of Invoices')
     out_shipment_count = fields.Integer(compute=_compute_out_shipment_count,
-                                        string='# of Outgoing Shipments',
-                                        copy=False)
+                                        string='# of Outgoing Shipments')
     line_count = fields.Integer(compute=_compute_line_count,
                                 string='# of Outgoing Shipments',
                                 copy=False)
@@ -185,70 +178,11 @@ class RmaOrder(models.Model):
             rec.state = 'draft'
         return True
 
-    @api.model
-    def prepare_rma_line(self, origin_rma, rma_id, line):
-        line_values = {
-            'origin': origin_rma.name,
-            'name': line.name,
-            'delivery_address_id':
-                line.delivery_address_id.id,
-            'product_id': line.product_id.id,
-            'parent_id': line.id,
-            'product_qty': line.product_qty,
-            'rma_id': rma_id.id}
-        return line_values
-
-    @api.model
-    def _prepare_rma_data(self, partner, origin_rma):
-        return {
-            'partner_id': partner.id,
-            'delivery_address_id': partner.id,
-            'type': 'supplier',
-            'assigned_to': origin_rma.assigned_to.id,
-            'requested_by': origin_rma.requested_by.id,
-            'date_rma': origin_rma.date_rma,
-        }
-
-    @api.model
-    def _create_supplier_rma(self, origin_rma, lines):
-        partners = lines.mapped('partner_address_id')
-        for partner in partners:
-            existing_rmas = self.env['rma.order'].search(
-                [('partner_id', '=', partner.id),
-                 ('state', '=', 'draft'),
-                 ('type', '=', 'supplier')])
-            if not len(existing_rmas):
-                rma_values = self._prepare_rma_data(partner, origin_rma)
-                rma_id = self.env['rma.order'].with_context(
-                    supplier=True).create(rma_values)
-            else:
-                rma_id = existing_rmas[-1]
-            for line in lines.filtered(
-                    lambda p: p.partner_address_id == partner):
-                if line.children_ids and line.children_ids.ids:
-                    for child_id in line.children_ids:
-                        if child_id.parent_id and child_id.parent_id.id:
-                            if child_id.parent_id.id != line.id:
-                                line_values = self.prepare_rma_line(
-                                    origin_rma, rma_id, line)
-                                self.env['rma.order.line'].create(line_values)
-                else:
-                    line_values = self.prepare_rma_line(
-                        origin_rma, rma_id, line)
-                    self.env['rma.order.line'].create(line_values)
-        return True
-
     @api.multi
     def action_rma_approve(self):
         # pass the supplier address in case this is a customer RMA
         for rec in self:
             rec.state = 'approved'
-            # Only customer RMA can create supplier RMA
-            if rec.type == 'customer':
-                lines = rec.rma_line_ids.filtered(
-                    lambda p: p.customer_to_supplier)
-                if lines:
-                    self._create_supplier_rma(rec, lines)
         return True
 
     @api.multi

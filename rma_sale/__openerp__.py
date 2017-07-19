@@ -14,7 +14,7 @@
     'author': "Akretion, Camptocamp, Eezee-it, MONK Software, Vauxoo, Eficent,"
               "Odoo Community Association (OCA)",
     'website': 'http://www.github.com/OCA/rma',
-    'depends': ['rma', 'sale_stock'],
+    'depends': ['rma_account', 'sale_stock'],
     'data': ['views/rma_order_view.xml',
              'views/rma_operation_view.xml',
              'views/sale_order_view.xml',

@@ -41,11 +41,8 @@ class RmaOrderLine(models.Model):
 
     @api.multi
     def _compute_refund_count(self):
-        self.ensure_one()
-        refund_list = []
-        for inv_line in self.refund_line_ids:
-            refund_list.append(inv_line.invoice_id.id)
-        self.refund_count = len(list(set(refund_list)))
+        for rec in self:
+            rec.refund_count = len(rec.refund_line_ids.mapped('invoice_id'))
 
     invoice_address_id = fields.Many2one(
         'res.partner', string='Partner invoice address',
@@ -69,7 +66,7 @@ class RmaOrderLine(models.Model):
     refund_policy = fields.Selection([
         ('no', 'No refund'), ('ordered', 'Based on Ordered Quantities'),
         ('received', 'Based on Received Quantities')], string="Refund Policy",
-        required=True)
+        required=True, default='no')
     qty_to_refund = fields.Float(
         string='Qty To Refund', copy=False,
         digits=dp.get_precision('Product Unit of Measure'), readonly=True,

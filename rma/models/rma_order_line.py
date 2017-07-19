@@ -55,20 +55,20 @@ class RmaOrderLine(models.Model):
 
     @api.multi
     def _get_rma_move_qty(self, states, direction='in'):
-        self.ensure_one()
-        product_obj = self.env['product.uom']
-        qty = 0.0
-        if direction == 'in':
-            op = ops['=']
-        else:
-            op = ops['!=']
-        for move in self.procurement_ids.mapped('move_ids').filtered(
-                lambda m: m.state in states and op(m.location_id.usage,
-                                                   self.type)):
-            qty += product_obj._compute_qty_obj(
-                move.product_uom, move.product_uom_qty,
-                self.uom_id)
-        return qty
+        for rec in self:
+            product_obj = self.env['product.uom']
+            qty = 0.0
+            if direction == 'in':
+                op = ops['=']
+            else:
+                op = ops['!=']
+            for move in rec.procurement_ids.mapped('move_ids').filtered(
+                    lambda m: m.state in states and op(m.location_id.usage,
+                                                       rec.type)):
+                qty += product_obj._compute_qty_obj(
+                    move.product_uom, move.product_uom_qty,
+                    rec.uom_id)
+            return qty
 
     @api.multi
     @api.depends('move_ids', 'move_ids.state', 'qty_received',
@@ -123,14 +123,28 @@ class RmaOrderLine(models.Model):
             qty = rec._get_rma_move_qty('done', direction='out')
             rec.qty_delivered = qty
 
+    @api.model
+    def _get_supplier_rma_qty(self):
+        return sum(self.supplier_rma_line_ids.filtered(
+            lambda r: r.state != 'cancel').mapped(
+            'product_qty'))
+
+    @api.multi
+    @api.depends('customer_to_supplier', 'supplier_rma_line_ids',
+                 'supplier_rma_line_ids.rma_id.state',
+                 'move_ids', 'move_ids.state', 'qty_received',
+                 'receipt_policy', 'product_qty', 'type')
+    def _compute_qty_supplier_rma(self):
+        for rec in self:
+            qty = rec._get_supplier_rma_qty()
+            rec.qty_to_supplier_rma = rec.qty_to_receive - qty
+            rec.qty_in_supplier_rma = qty
+
     @api.multi
     def _compute_procurement_count(self):
-        self.ensure_one()
-        procurement_list = []
-        for procurement in self.procurement_ids.filtered(
-                lambda p: p.state == 'exception'):
-            procurement_list.append(procurement.id)
-        self.procurement_count = len(list(set(procurement_list)))
+        for rec in self:
+            rec.procurement_count = len(rec.procurement_ids.filtered(
+                lambda p: p.state == 'exception'))
 
     delivery_address_id = fields.Many2one(
         'res.partner', string='Partner delivery address',
@@ -181,9 +195,9 @@ class RmaOrderLine(models.Model):
                                       copy=False)
     currency_id = fields.Many2one('res.currency', string="Currency")
     company_id = fields.Many2one('res.company', string='Company',
-                                 relation='rma_id.company_id', store=True)
+                                 related='rma_id.company_id', store=True)
     type = fields.Selection(related='rma_id.type')
-    customer_to_supplier= fields.Boolean(
+    customer_to_supplier = fields.Boolean(
         'The customer will send to the supplier')
     supplier_to_customer = fields.Boolean(
         'The supplier will send to the customer')
@@ -214,16 +228,15 @@ class RmaOrderLine(models.Model):
     location_id = fields.Many2one(
         'stock.location', 'Send To This Company Location', required=True,
         default=_default_location_id)
-    parent_id = fields.Many2one(
-        'rma.order.line', string='Parent RMA line', ondelete='cascade')
-    children_ids = fields.One2many('rma.order.line', 'parent_id')
-    partner_address_id = fields.Many2one(
+    customer_rma_id = fields.Many2one(
+        'rma.order.line', string='Customer RMA line', ondelete='cascade')
+    supplier_rma_line_ids = fields.One2many('rma.order.line', 'customer_rma_id')
+    supplier_address_id = fields.Many2one(
         'res.partner', readonly=True,
         states={'draft': [('readonly', False)]},
-        string='Partner Address',
+        string='Supplier Address',
         help="This address of the supplier in case of Customer RMA operation "
-             "dropship. The address of the customer in case of Supplier RMA "
-             "operation dropship")
+             "dropship.")
     product_qty = fields.Float(
         string='Ordered Qty', copy=False,
         digits=dp.get_precision('Product Unit of Measure'))
@@ -255,6 +268,16 @@ class RmaOrderLine(models.Model):
         digits=dp.get_precision('Product Unit of Measure'),
         readonly=True, compute=_compute_qty_delivered,
         store=True)
+    qty_to_supplier_rma = fields.Float(
+        string='Qty to send to Supplier RMA',
+        digits=dp.get_precision('Product Unit of Measure'),
+        readonly=True, compute=_compute_qty_supplier_rma,
+        store=True)
+    qty_in_supplier_rma = fields.Float(
+        string='Qty in Supplier RMA',
+        digits=dp.get_precision('Product Unit of Measure'),
+        readonly=True, compute=_compute_qty_supplier_rma,
+        store=True)
 
     @api.model
     def _get_product_name(self):
@@ -274,10 +297,8 @@ class RmaOrderLine(models.Model):
         self.product_qty = 1
         self.uom_id = self.product_id.uom_id.id
         self.price_unit = self.product_id.standard_price
-        if self.product_id.categ_id.rma_operation_id:
-            self.operation_id = self.product_id.rma_operation_id
-        else:
-            self.operation_id = self.product_id.categ_id.rma_operation_id
+        self.operation_id = self.product_id.rma_operation_id or \
+            self.product_id.categ_id.rma_operation_id
         return result
 
     @api.onchange('operation_id')
