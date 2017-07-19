@@ -10,8 +10,9 @@
         <field name="arch" type="xml">
              <form string="Disposition: RMA">
                  <div class="oe_inline">
-                    <p class="oe_inline">Create a RMA for the quality control issue:
-                    </p><field name="qc_issue_id" class="oe_inline" options='{"no_open": True}'/>
+                    <group>
+                        <field name="qc_issue_id" class="oe_inline" options='{"no_open": True}'/>
+                    </group>
                  </div>
                  <group name="options">
                      <field name="new_or_update"/>
@@ -31,6 +32,10 @@
                              string="Create RMA" type="object"
                              class="oe_highlight"
                              attrs="{'invisible': [('new_or_update','!=','new')]}"/>
+                     <button name="update_existing_rma"
+                             string="Update RMA (WIP)" type="object"
+                             class="oe_highlight"
+                             attrs="{'invisible': [('new_or_update','!=','update')]}"/>
                      <button special="cancel" string="Cancel" class="oe_link"/>
                  </group>
             </form>

@@ -14,9 +14,10 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         comodel_name="rma.order", string="Existing RMA")
     rma_type = fields.Selection(
         [('customer', 'Customer'), ('supplier', 'Supplier')],
-        string="RMA Type", required=True)
+        string="RMA Type")
     partner_id = fields.Many2one(
         comodel_name="res.partner", string="Partner")
+    # TODO: restrict partner_id domain?
     qc_issue_id = fields.Many2one(
         comodel_name="qc.issue", string="Quality Control Issue", required=True,
         readonly=True)
@@ -48,5 +49,20 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
             'view_mode': 'form',
             'res_model': 'rma.order',
             'context': self._prepare_rma_order_context(),
+        }
+        return action
+
+    @api.multi
+    def update_existing_rma(self):
+        context = self._prepare_rma_order_context()
+        context.pop('default_type', None)
+        context.update({'default_rma_id': self.rma_id.id})
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Create RMA line'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'rma.order.line',
+            'context': context,
         }
         return action
