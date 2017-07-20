@@ -21,6 +21,7 @@
              ],
     'data': ['security/rma.xml',
              'security/ir.model.access.csv',
+             'demo/stock_demo.xml',
              'data/rma_sequence.xml',
              'data/stock_data.xml',
              'data/rma_operation.xml',

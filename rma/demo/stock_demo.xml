@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="location_rma_shop0" model="stock.location">
+        <field name="name">RMA</field>
+        <field name="usage">internal</field>
+        <field name="location_id" ref="stock.stock_location_shop0"/>
+    </record>
+
+</odoo>
