@@ -68,7 +68,7 @@ class QcIssueMakeSupplierRma(models.TransientModel):
     def _prepare_supplier_rma_line(self, rma, item):
         operation = self.env['rma.operation'].search(
             [('type', '=', 'supplier')], limit=1)
-        return {
+        data = {
             'origin': item.issue_id.name,
             'name': item.issue_id.name,
             'product_id': item.product_id.id,
@@ -84,6 +84,17 @@ class QcIssueMakeSupplierRma(models.TransientModel):
             'in_route_id': operation.in_route_id.id,
             'out_route_id': operation.out_route_id.id,
         }
+        if item.issue_id.location_id:
+            data['location_id'] = item.issue_id.location_id.id
+            wh = self.env["stock.warehouse"].search([
+                ('view_location_id.parent_left', '<=',
+                 item.issue_id.location_id.parent_left),
+                ('view_location_id.parent_right', '>=',
+                 item.issue_id.location_id.parent_left)], limit=1)
+            if wh:
+                data['in_warehouse_id'] = item.issue_id.location_id.id
+                data['out_warehouse_id'] = item.issue_id.location_id.id
+        return data
 
     @api.multi
     def make_supplier_rma(self):
