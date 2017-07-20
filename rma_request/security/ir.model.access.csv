@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_rma_request_user_customer,rma.order.customer.user,model_rma_request,rma.group_rma_customer_user,1,1,1,1
-access_rma_request_user_supplier,rma.order.supplier.user,model_rma_request,rma.group_rma_supplier_user,1,1,1,1
-access_rma_request_manager,rma.request.manager,model_rma_request,rma.group_rma_manager,1,1,1,1
