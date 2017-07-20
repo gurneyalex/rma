@@ -17,7 +17,7 @@ class RmaOrderLine(models.Model):
         partner_id = self.env.context.get('partner_id', False)
         if partner_id:
             return self.env['res.partner'].browse(partner_id)
-        return self.env['res.partner'].search([], limit=1)
+        return False
 
     @api.multi
     @api.depends('refund_line_ids', 'refund_line_ids.invoice_id.state',

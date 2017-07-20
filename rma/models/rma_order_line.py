@@ -35,7 +35,7 @@ class RmaOrderLine(models.Model):
         partner_id = self.env.context.get('partner_id', False)
         if partner_id:
             return self.env['res.partner'].browse(partner_id)
-        return self.env['res.partner'].search([], limit=1)
+        return False
 
     @api.multi
     def _compute_in_shipment_count(self):
