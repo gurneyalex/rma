@@ -9,11 +9,6 @@
         <field name="model">qc.issue</field>
         <field name="inherit_id" ref="quality_control_issue.qc_issue_form"/>
         <field name="arch" type="xml">
-            <button name="action_done" position="before">
-                <button name="%(action_qc_issue_make_rma)d"
-                        type="action" states="progress" string="Create RMA"
-                        context="{'default_qc_issue_id':active_id}"/>
-            </button>
             <div name="button_box" position="inside">
                 <button type="object"  name="action_view_rma_lines_supplier"
                         class="oe_stat_button"

@@ -13,9 +13,8 @@
     "website": "http://www.github.com/OCA/rma",
     "depends": ["rma", "quality_control_issue"],
     "data": [
-        "wizard/qc_issue_make_rma_view.xml",
         "views/qc_issue_view.xml",
-        "views/rma_order_view.xml",
+        "wizard/qc_issue_make_supplier_rma_view.xml",
         "views/rma_order_line_view.xml",
     ],
     "installable": True,

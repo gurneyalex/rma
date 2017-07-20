@@ -5,20 +5,8 @@
 from openerp import api, fields, models
 
 
-class RmaOrder(models.Model):
-    _inherit = "rma.order"
-
-    @api.onchange('partner_id')
-    def _testing(self):
-        pass
-
-
 class RmaOrderLine(models.Model):
     _inherit = "rma.order.line"
 
     qc_issue_id = fields.Many2one(
-        comodel_name="qc.issue", string="Quality Control Issue")
-
-    @api.onchange('product_id')
-    def _testing(self):
-        pass
+        comodel_name="qc.issue", string="Quality Control Issue", copy=False)
