@@ -153,6 +153,7 @@ class QcIssueMakeSupplierRmaItem(models.TransientModel):
         comodel_name="stock.production.lot", string="Lot/Serial Number",
         readonly=True, related='issue_id.lot_id',
     )
+    product_tracking = fields.Selection(related="product_id.tracking")
     name = fields.Char(related='issue_id.name', readonly=True)
     uom_id = fields.Many2one('product.uom', string='UoM', readonly=True)
     product_qty = fields.Float(string='Quantity to RMA',
