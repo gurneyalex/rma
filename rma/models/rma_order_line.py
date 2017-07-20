@@ -173,6 +173,7 @@ class RmaOrderLine(models.Model):
                               "when displaying the rma.")
     product_id = fields.Many2one('product.product', string='Product',
                                  ondelete='restrict', required=-True)
+    product_tracking = fields.Selection(related="product_id.tracking")
     lot_id = fields.Many2one(
         comodel_name="stock.production.lot", string="Lot/Serial Number",
         readonly=True, states={"new": [("readonly", False)]},
