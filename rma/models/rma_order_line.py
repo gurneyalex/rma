@@ -34,7 +34,9 @@ class RmaOrderLine(models.Model):
     def _default_delivery_address(self):
         partner_id = self.env.context.get('partner_id', False)
         if partner_id:
-            return self.env['res.partner'].browse(partner_id)
+            partner = self.env['res.partner'].browse(partner_id)
+            addr = partner.address_get(['delivery'])
+            return self.env['res.partner'].browse(addr['delivery'])
         return False
 
     @api.multi
