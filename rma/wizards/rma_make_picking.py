@@ -26,7 +26,7 @@ class RmaMakePicking(models.TransientModel):
                   'type': line.type,
                   'company_id': line.company_id.id,
                   'operation_id': line.operation_id.id,
-                  'partner_address_id': line.partner_address_id.id,
+                  'supplier_address_id': line.supplier_address_id.id,
                   'in_route_id': line.in_route_id.id,
                   'out_route_id': line.out_route_id.id,
                   'qty_to_receive': line.qty_to_receive,
@@ -36,7 +36,7 @@ class RmaMakePicking(models.TransientModel):
                   'line_id': line.id,
                   'rma_id': line.rma_id.id,
                   'wiz_id': self.env.context['active_id'],
-                  'delivery_address': line.delivery_address_id.id,
+                  'delivery_address_id': line.delivery_address_id.id,
                   'receipt_policy': line.receipt_policy,
                   'delivery_policy': line.delivery_policy,
                   'in_warehouse_id': line.in_warehouse_id.id,
@@ -89,10 +89,10 @@ class RmaMakePicking(models.TransientModel):
 
     @api.model
     def _get_address(self, line):
-        if line.delivery_address:
-            delivery_address = line.delivery_address
+        if line.delivery_address_id:
+            delivery_address = line.delivery_address_id
         elif line.customer_to_supplier:
-            delivery_address = line.partner_address_id
+            delivery_address = line.supplier_address_id
         else:
             raise exceptions.Warning('Unknown delivery address')
         return delivery_address
@@ -102,7 +102,6 @@ class RmaMakePicking(models.TransientModel):
             return delivery_address_id.property_stock_supplier
         elif type == 'customer':
             return delivery_address_id.property_stock_customer
-
 
     @api.model
     def _get_procurement_data(self, line, group, qty, picking_type):
@@ -244,12 +243,11 @@ class RmaMakePickingItem(models.TransientModel):
     company_id = fields.Many2one('res.company')
     name = fields.Char(string='Description', required=True)
     operation_id = fields.Many2one(comodel_name="rma.operation")
-    partner_address_id = fields.Many2one(
+    supplier_address_id = fields.Many2one(
         'res.partner', readonly=True,
-        string='Partner Address',
+        string='Supplier Address',
         help="This address of the supplier in case of Customer RMA operation "
-             "dropship. The address of the customer in case of Supplier RMA "
-             "operation dropship")
+             "dropship.")
     product_qty = fields.Float(
         string='Quantity Ordered', copy=False,
         digits=dp.get_precision('Product Unit of Measure'),
@@ -288,5 +286,5 @@ class RmaMakePickingItem(models.TransientModel):
                                        string='Outbound Warehouse')
     location_id = fields.Many2one(
         'stock.location', 'Send To This Company Location')
-    delivery_address = fields.Many2one(
+    delivery_address_id = fields.Many2one(
         'res.partner', string='Partner delivery address')
