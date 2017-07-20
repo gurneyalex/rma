@@ -92,8 +92,8 @@ class QcIssueMakeSupplierRma(models.TransientModel):
                 ('view_location_id.parent_right', '>=',
                  item.issue_id.location_id.parent_left)], limit=1)
             if wh:
-                data['in_warehouse_id'] = item.issue_id.location_id.id
-                data['out_warehouse_id'] = item.issue_id.location_id.id
+                data['in_warehouse_id'] = wh.id
+                data['out_warehouse_id'] = wh.id
         return data
 
     @api.multi
@@ -139,7 +139,8 @@ class QcIssueMakeSupplierRmaItem(models.TransientModel):
         'qc.issue.make.supplier.rma',
         string='Wizard', required=True, ondelete='cascade',
         readonly=True)
-    issue_id = fields.Many2one('qc.issue', string='RMA Line', required=True)
+    issue_id = fields.Many2one('qc.issue', string='Quality Issue',
+                               required=True)
     product_id = fields.Many2one('product.product',
                                  related='issue_id.product_id', readony=True)
     name = fields.Char(related='issue_id.name', readonly=True)
