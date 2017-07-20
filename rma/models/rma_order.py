@@ -105,7 +105,8 @@ class RmaOrder(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code(
                 'rma.order.supplier')
         else:
-            vals['name'] = self.env['ir.sequence'].next_by_code('rma.order')
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'rma.order.customer')
         return super(RmaOrder, self).create(vals)
 
     @api.multi

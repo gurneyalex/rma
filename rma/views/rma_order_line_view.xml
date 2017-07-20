@@ -49,103 +49,113 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <form string="RMA Line">
-                    <div name="button_box" class="oe_button_box">
-                        <button type="object"  name="action_view_in_shipments"
-                                class="oe_stat_button"
-                                icon="fa-truck"
-                                groups="stock.group_stock_user">
-                            <field name="in_shipment_count" widget="statinfo"
-                                   string="Shipments"/>
-                        </button>
-                        <button type="object"  name="action_view_out_shipments"
-                                class="oe_stat_button"
-                                icon="fa-truck"
-                                groups="stock.group_stock_user">
-                            <field name="out_shipment_count" widget="statinfo"
-                                   string="Deliveries"/>
-                        </button>
-                        <button type="object" name="action_view_procurements"
-                                class="oe_stat_button"
-                                icon="fa-warning"
-                                groups="stock.group_stock_user">
-                            <field name="procurement_count" widget="statinfo"
-                                   string="Proc. Exceptions"/>
-                        </button>
-                    </div>
-                    <group>
-                        <group name="rma" string="Order">
-                            <field name="rma_id" readonly="1"/>
-                            <field name="origin"/>
-                            <field name="reference_move_id"/>
-                            <field name="state" invisible="1"/>
-                            <field name="name" invisible="1"/>
+                    <sheet>
+                        <header/>
+                        <div name="button_box" class="oe_button_box">
+                            <button type="object"  name="action_view_in_shipments"
+                                    class="oe_stat_button"
+                                    icon="fa-truck"
+                                    groups="stock.group_stock_user">
+                                <field name="in_shipment_count" widget="statinfo"
+                                       string="Shipments"/>
+                            </button>
+                            <button type="object"  name="action_view_out_shipments"
+                                    class="oe_stat_button"
+                                    icon="fa-truck"
+                                    groups="stock.group_stock_user">
+                                <field name="out_shipment_count" widget="statinfo"
+                                       string="Deliveries"/>
+                            </button>
+                            <button type="object" name="action_view_procurements"
+                                    class="oe_stat_button"
+                                    icon="fa-warning"
+                                    groups="stock.group_stock_user">
+                                <field name="procurement_count" widget="statinfo"
+                                       string="Proc. Exceptions"/>
+                            </button>
+                        </div>
+                        <div class="oe_title" name="title">
+                        <h1>
+                            <field name="rma_id"/>
+                            <field name="name"/>
+                        </h1>
+                        </div>
+                        <group>
+                            <group name="rma" string="Order">
+                                <field name="origin"/>
+                                <field name="reference_move_id"/>
+                                <field name="state" invisible="1"/>
+                            </group>
+                            <group name="contact" string="Contact">
+                                <field name="requested_by" readonly="1"/>
+                                <field name="assigned_to" readonly="1"/>
+                            </group>
+                            <group name="product" string="Product" colspan="2">
+                                <field name="product_id"/>
+                                <field name="product_tracking" invisible="1"/>
+                                <field name="lot_id"
+                                       groups="stock.group_production_lot"
+                                       attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
+                                <newline/>
+                                <field name="product_qty"/>
+                                <field name="price_unit"/>
+                                <field name="uom_id" groups="product.group_uom"/>
+                            </group>
+                            <group name="operation" string="Operation" colspan="2">
+                                <field name="operation_id"
+                                       domain="[('type','=','supplier')]"/>
+                                <field name="receipt_policy"/>
+                                <field name="delivery_policy"/>
+                            </group>
+                            <group name="company" string="Company"
+                                   groups="base.group_multi_company">
+                                <field name="company_id"/>
+                            </group>
                         </group>
-                        <group name="contact" string="Contact">
-                            <field name="requested_by" readonly="1"/>
-                            <field name="assigned_to" readonly="1"/>
-                        </group>
-                        <group name="product" string="Product" colspan="2">
-                            <field name="product_id"/>
-                            <field name="product_tracking" invisible="1"/>
-                            <field name="lot_id"
-                                   groups="stock.group_production_lot"
-                                   attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
-                            <newline/>
-                            <field name="product_qty"/>
-                            <field name="price_unit"/>
-                            <field name="uom_id" groups="product.group_uom"/>
-                        </group>
-                        <group name="operation" string="Operation" colspan="2">
-                            <field name="operation_id"
-                                   domain="[('type','=','supplier')]"/>
-                            <field name="receipt_policy"/>
-                            <field name="delivery_policy"/>
-                        </group>
-                        <group name="company" string="Company"
-                               groups="base.group_multi_company">
-                            <field name="company_id"/>
-                        </group>
-                    </group>
-                    <notebook>
-                        <page name="route" string="Routes" groups="stock.group_adv_location">
-                            <group>
+                        <notebook>
+                            <page name="description" string="Description">
+                                <field name="description" nolabel="1"/>
+                            </page>
+                            <page name="route" string="Routes" groups="stock.group_adv_location">
                                 <group>
-                                    <group name="inbound" string="Inbound">
-                                        <field name="in_warehouse_id"/>
-                                        <field name="location_id"
-                                               domain="[('usage', '=', 'internal')]"/>
-                                        <field name="in_route_id"/>
-                                        <field name="supplier_to_customer"/>
-                                    </group>
-                                    <group name="outbound" string="Outbound">
-                                        <field name="out_warehouse_id"/>
-                                        <field name="delivery_address_id"
-                                               groups='rma.group_rma_delivery_invoice_address'/>
-                                        <field name="out_route_id"/>
-                                    </group>
-                                </group>
-                            </group>
-                        </page>
-                        <page name="stock" string="Stock Moves">
-                            <field name="move_ids" nolabel="1" readonly="1"/>
-                        </page>
-                        <page name="quantities" string="Quantities">
-                            <group>
-                                <group name="quantities" col="4" string="Quantities">
-                                    <group name="receive">
-                                        <field name="qty_to_receive"/>
-                                        <field name="qty_incoming"/>
-                                        <field name="qty_received"/>
-                                    </group>
-                                    <group name="deliver">
-                                        <field name="qty_to_deliver"/>
-                                        <field name="qty_outgoing"/>
-                                        <field name="qty_delivered"/>
+                                    <group>
+                                        <group name="inbound" string="Inbound">
+                                            <field name="in_warehouse_id"/>
+                                            <field name="location_id"
+                                                   domain="[('usage', '=', 'internal')]"/>
+                                            <field name="in_route_id"/>
+                                            <field name="supplier_to_customer"/>
+                                        </group>
+                                        <group name="outbound" string="Outbound">
+                                            <field name="out_warehouse_id"/>
+                                            <field name="delivery_address_id"
+                                                   groups='rma.group_rma_delivery_invoice_address'/>
+                                            <field name="out_route_id"/>
+                                        </group>
                                     </group>
                                 </group>
-                            </group>
-                        </page>
-                    </notebook>
+                            </page>
+                            <page name="stock" string="Stock Moves">
+                                <field name="move_ids" nolabel="1" readonly="1"/>
+                            </page>
+                            <page name="quantities" string="Quantities">
+                                <group>
+                                    <group name="quantities" col="4" string="Quantities">
+                                        <group name="receive">
+                                            <field name="qty_to_receive"/>
+                                            <field name="qty_incoming"/>
+                                            <field name="qty_received"/>
+                                        </group>
+                                        <group name="deliver">
+                                            <field name="qty_to_deliver"/>
+                                            <field name="qty_outgoing"/>
+                                            <field name="qty_delivered"/>
+                                        </group>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
                 </form>
             </field>
         </record>
@@ -155,116 +165,122 @@
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
                 <form string="Rma Line">
-                    <header/>
-                    <div name="button_box" class="oe_button_box">
-                        <button type="object"  name="action_view_in_shipments"
-                                class="oe_stat_button"
-                                icon="fa-truck"
-                                groups="stock.group_stock_user">
-                            <field name="in_shipment_count" widget="statinfo"
-                                   string="Shipments"/>
-                        </button>
-                        <button type="object"  name="action_view_out_shipments"
-                                class="oe_stat_button"
-                                icon="fa-truck"
-                                groups="stock.group_stock_user">
-                            <field name="out_shipment_count" widget="statinfo"
-                                   string="Deliveries"/>
-                        </button>
-                        <button type="object"  name="action_view_invoice"
-                                class="oe_stat_button"
-                                icon="fa-pencil-square-o"
-                                string="Origin Inv">
-                        </button>
-                        <button type="object" name="action_view_procurements"
-                                class="oe_stat_button"
-                                icon="fa-warning"
-                                groups="stock.group_stock_user">
-                            <field name="procurement_count" widget="statinfo"
-                                   string="Exceptions"/>
-                        </button>
-                    </div>
-                    <group>
-                        <group name="rma" string="Order">
-                            <field name="rma_id" readonly="1"/>
-                            <field name="origin"/>
-                            <field name="reference_move_id"/>
-                            <field name="state" invisible="1"/>
-                            <field name="name" invisible="1"/>
+                    <sheet>
+                        <header/>
+                        <div name="button_box" class="oe_button_box">
+                            <button type="object"  name="action_view_in_shipments"
+                                    class="oe_stat_button"
+                                    icon="fa-truck"
+                                    groups="stock.group_stock_user">
+                                <field name="in_shipment_count" widget="statinfo"
+                                       string="Shipments"/>
+                            </button>
+                            <button type="object"  name="action_view_out_shipments"
+                                    class="oe_stat_button"
+                                    icon="fa-truck"
+                                    groups="stock.group_stock_user">
+                                <field name="out_shipment_count" widget="statinfo"
+                                       string="Deliveries"/>
+                            </button>
+                            <button type="object"  name="action_view_invoice"
+                                    class="oe_stat_button"
+                                    icon="fa-pencil-square-o"
+                                    string="Origin Inv">
+                            </button>
+                            <button type="object" name="action_view_procurements"
+                                    class="oe_stat_button"
+                                    icon="fa-warning"
+                                    groups="stock.group_stock_user">
+                                <field name="procurement_count" widget="statinfo"
+                                       string="Exceptions"/>
+                            </button>
+                        </div>
+                        <div class="oe_title" name="title">
+                        <h1>
+                            <field name="rma_id"/>
+                            <field name="name"/>
+                        </h1>
+                        <group>
+                            <group name="rma" string="Order">
+                                <field name="origin"/>
+                                <field name="reference_move_id"/>
+                                <field name="state" invisible="1"/>
+                                <field name="name" invisible="1"/>
+                            </group>
+                            <group name="contact" string="Contact">
+                                <field name="requested_by" readonly="1"/>
+                                <field name="assigned_to" readonly="1"/>
+                            </group>
+                            <group name="product" string="Product">
+                                <field name="product_id"/>
+                                <field name="product_tracking" invisible="1"/>
+                                <field name="lot_id"
+                                       groups="stock.group_production_lot"
+                                       attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
+                                <newline/>
+                                <field name="product_qty"/>
+                                <field name="uom_id" groups="product.group_uom"/>
+                                <field name="price_unit"/>
+                            </group>
+                            <group name="operation" string="Operation">
+                                <field name="operation_id" domain="[('type','=','customer')]"/>
+                                <field name="receipt_policy"/>
+                                <field name="delivery_policy"/>
+                            </group>
+                             <group name="company" string="Company"
+                                    groups="base.group_multi_company">
+                                <field name="company_id"/>
+                            </group>
                         </group>
-                        <group name="contact" string="Contact">
-                            <field name="requested_by" readonly="1"/>
-                            <field name="assigned_to" readonly="1"/>
-                        </group>
-                        <group name="product" string="Product">
-                            <field name="product_id"/>
-                            <field name="product_tracking" invisible="1"/>
-                            <field name="lot_id"
-                                   groups="stock.group_production_lot"
-                                   attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
-                            <newline/>
-                            <field name="product_qty"/>
-                            <field name="uom_id" groups="product.group_uom"/>
-                            <field name="price_unit"/>
-                        </group>
-                        <group name="operation" string="Operation">
-                            <field name="operation_id" domain="[('type','=','customer')]"/>
-                            <field name="receipt_policy"/>
-                            <field name="delivery_policy"/>
-                        </group>
-                         <group name="company" string="Company"
-                                groups="base.group_multi_company">
-                            <field name="company_id"/>
-                        </group>
-                    </group>
-                    <notebook>
-                        <page name="route" string="Routes">
-                            <group>
+                        <notebook>
+                            <page name="route" string="Routes">
                                 <group>
-                                    <group name="inbound" string="Inbound">
-                                        <field name="in_warehouse_id"/>
-                                        <field name="location_id"
-                                               domain="[('usage', '=', 'internal')]"/>
-                                        <field name="in_route_id"/>
-                                        <field name="customer_to_supplier"/>
-                                        <field name="supplier_address_id"
-                                               attrs="{'required':[('customer_to_supplier', '=', True)],
-                                                       'invisible':[('customer_to_supplier', '=', False)]}"/>
-                                    </group>
-                                    <group name="outbound" string="Outbound">
-                                        <field name="out_warehouse_id"/>
-                                        <field name="delivery_address_id"
-                                               groups='rma.group_rma_delivery_invoice_address'/>
-                                        <field name="out_route_id"/>
-                                    </group>
-                                </group>
-                            </group>
-                        </page>
-                        <page name="stock" string="Stock Moves">
-                            <field name="move_ids" nolabel="1" readonly="1"/>
-                        </page>
-                        <page name="quantities" string="Quantities">
-                            <group>
-                                <group name="quantities" col="4" string="Quantities">
-                                    <group name="receive">
-                                        <field name="qty_to_receive"/>
-                                        <field name="qty_incoming"/>
-                                        <field name="qty_received"/>
-                                    </group>
-                                    <group name="deliver">
-                                        <field name="qty_to_deliver"/>
-                                        <field name="qty_outgoing"/>
-                                        <field name="qty_delivered"/>
-                                    </group>
-                                    <group name="supplier_rma"
-                                           attrs="{'invisible':[('customer_to_supplier','=',False)]}">
-                                        <field name="qty_to_supplier_rma"/>
-                                        <field name="qty_in_supplier_rma"/>
+                                    <group>
+                                        <group name="inbound" string="Inbound">
+                                            <field name="in_warehouse_id"/>
+                                            <field name="location_id"
+                                                   domain="[('usage', '=', 'internal')]"/>
+                                            <field name="in_route_id"/>
+                                            <field name="customer_to_supplier"/>
+                                            <field name="supplier_address_id"
+                                                   attrs="{'required':[('customer_to_supplier', '=', True)],
+                                                           'invisible':[('customer_to_supplier', '=', False)]}"/>
+                                        </group>
+                                        <group name="outbound" string="Outbound">
+                                            <field name="out_warehouse_id"/>
+                                            <field name="delivery_address_id"
+                                                   groups='rma.group_rma_delivery_invoice_address'/>
+                                            <field name="out_route_id"/>
+                                        </group>
                                     </group>
                                 </group>
-                            </group>
-                        </page>
-                    </notebook>
+                            </page>
+                            <page name="stock" string="Stock Moves">
+                                <field name="move_ids" nolabel="1" readonly="1"/>
+                            </page>
+                            <page name="quantities" string="Quantities">
+                                <group>
+                                    <group name="quantities" col="4" string="Quantities">
+                                        <group name="receive">
+                                            <field name="qty_to_receive"/>
+                                            <field name="qty_incoming"/>
+                                            <field name="qty_received"/>
+                                        </group>
+                                        <group name="deliver">
+                                            <field name="qty_to_deliver"/>
+                                            <field name="qty_outgoing"/>
+                                            <field name="qty_delivered"/>
+                                        </group>
+                                        <group name="supplier_rma"
+                                               attrs="{'invisible':[('customer_to_supplier','=',False)]}">
+                                            <field name="qty_to_supplier_rma"/>
+                                            <field name="qty_in_supplier_rma"/>
+                                        </group>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
                 </form>
             </field>
         </record>
@@ -316,7 +332,7 @@
             <field name="res_model">rma.order.line</field>
             <field name="domain">[('state','in', ['approved', 'done']),
                 ('type','=', 'supplier')]</field>
-            <field name="context">{"search_default_assigned_to":uid}</field>
+            <field name="context">{"search_default_assigned_to":uid, "supplier":1}</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rma_line_supplier_tree"/>

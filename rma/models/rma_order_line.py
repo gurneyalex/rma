@@ -156,7 +156,8 @@ class RmaOrderLine(models.Model):
 
     rma_id = fields.Many2one('rma.order', string='RMA',
                              ondelete='cascade', required=True)
-    name = fields.Text(string='Description', required=True)
+    name = fields.Char(required=True, default='/')
+    description = fields.Text(string='Description')
     origin = fields.Char(string='Source Document',
                          help="Reference of the document that produced "
                               "this rma.")
@@ -289,20 +290,20 @@ class RmaOrderLine(models.Model):
         store=True)
 
     @api.model
-    def _get_product_name(self):
-        name = False
-        if self.product_id:
-            name = self.product_id.name
-            if self.product_id.code:
-                name = '[%s] %s' % (name, self.product_id.code)
-        return name
+    def create(self, vals):
+        if self.env.context.get('supplier'):
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'rma.order.line.supplier')
+        else:
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'rma.order.line.customer')
+        return super(RmaOrderLine, self).create(vals)
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
         result = {}
         if not self.product_id:
             return result
-        self.name = self._get_product_name()
         self.product_qty = 1
         self.uom_id = self.product_id.uom_id.id
         self.price_unit = self.product_id.standard_price
