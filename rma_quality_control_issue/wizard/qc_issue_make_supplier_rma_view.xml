@@ -26,7 +26,7 @@
                      <group>
                          <field name="item_ids" nolabel="1" colspan="2">
                               <tree string="Details" editable="bottom" create="false">
-                                  <field name="line_id"
+                                  <field name="issue_id"
                                        options="{'no_open': true}"/>
                                   <field name="product_id"/>
                                   <field name="name"/>
@@ -69,7 +69,7 @@
             <field name="model">qc.issue</field>
         </record>
 
-     <record id="view_rma_line_supplier_rma_button_form" model="ir.ui.view">
+     <record id="view_qc_issue_supplier_rma_button_form" model="ir.ui.view">
         <field name="name">qc.issue.supplier.rma.form</field>
         <field name="model">qc.issue</field>
         <field name="inherit_id" ref="qc_issue_form"/>
