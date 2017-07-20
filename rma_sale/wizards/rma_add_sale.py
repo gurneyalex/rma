@@ -47,7 +47,6 @@ class RmaAddSale(models.TransientModel):
                                      readonly=False,
                                      string='Sale Lines')
 
-
     def _prepare_rma_line_from_sale_order_line(self, line):
         operation = line.product_id.rma_operation_id and \
                     line.product_id.rma_operation_id.id or False
@@ -57,7 +56,6 @@ class RmaAddSale(models.TransientModel):
         data = {
             'sale_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.product_id.name_template,
             'origin': line.order_id.name,
             'uom_id': line.product_uom.id,
             'operation_id': operation,

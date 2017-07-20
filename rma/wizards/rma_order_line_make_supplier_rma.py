@@ -75,7 +75,6 @@ class RmaLineMakeSupplierRma(models.TransientModel):
                 [('type', '=', 'supplier')], limit=1)
         return {
             'origin': item.line_id.rma_id.name,
-            'name': item.line_id.name,
             'delivery_address_id':
                 item.line_id.delivery_address_id.id,
             'product_id': item.line_id.product_id.id,
@@ -143,7 +142,7 @@ class RmaLineMakeRmaOrderItem(models.TransientModel):
                              string='RMA Order', readonly=True)
     product_id = fields.Many2one('product.product',
                                  related='line_id.product_id', readony=True)
-    name = fields.Text(related='line_id.name', readonly=True)
+    name = fields.Char(related='line_id.name', readonly=True)
     uom_id = fields.Many2one('product.uom', string='UoM', readonly=True)
     product_qty = fields.Float(string='Quantity to sell',
                                digits=dp.get_precision('Product UoS'))

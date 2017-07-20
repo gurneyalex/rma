@@ -33,11 +33,8 @@ class RmaAddinvoice(models.TransientModel):
         res['invoice_line_ids'] = False
         return res
 
-    rma_id = fields.Many2one('rma.order',
-                              string='RMA Order',
-                              readonly=True,
-                              ondelete='cascade')
-
+    rma_id = fields.Many2one('rma.order', string='RMA Order', readonly=True,
+                             ondelete='cascade')
     partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
                                  readonly=True)
     invoice_id = fields.Many2one(comodel_name='account.invoice',
@@ -54,7 +51,6 @@ class RmaAddinvoice(models.TransientModel):
         data = {
             'invoice_line_id': line.id,
             'product_id': line.product_id.id,
-            'name': line.product_id.name_template,
             'origin': line.invoice_id.number,
             'uom_id': line.uom_id.id,
             'operation_id': operation.id,
