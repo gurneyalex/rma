@@ -125,7 +125,7 @@ class QcIssueMakeSupplierRmaItem(models.TransientModel):
     _description = "RMA Line Make Supplier RMA Item"
 
     wiz_id = fields.Many2one(
-        'qc.issue.make.rma.order',
+        'qc.issue.make.supplier.rma',
         string='Wizard', required=True, ondelete='cascade',
         readonly=True)
     issue_id = fields.Many2one('qc.issue', string='RMA Line', required=True)

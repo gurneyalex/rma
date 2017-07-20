@@ -74,11 +74,11 @@
         <field name="model">qc.issue</field>
         <field name="inherit_id" ref="qc_issue_form"/>
         <field name="arch" type="xml">
-            <header position="inside">
+            <button name="action_cancel" position="after">
                 <button name="%(action_qc_issue_make_supplier_rma)d"
                         string="Create Supplier RMA" class="oe_highlight"
                         type="action"/>
-            </header>
+            </button>
         </field>
     </record>
 </odoo>
