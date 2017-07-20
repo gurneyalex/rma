@@ -11,6 +11,7 @@
                     <field name="state" invisible="1"/>
                     <field name="partner_id"/>
                     <field name="product_id"/>
+                    <field name="lot_id" groups="stock.group_production_lot"/>
                     <field name="name"/>
                     <field name="origin"/>
                     <field name="operation_id"/>
@@ -32,6 +33,7 @@
                     <field name="state" invisible="1"/>
                     <field name="partner_id"/>
                     <field name="product_id"/>
+                    <field name="lot_id" groups="stock.group_production_lot"/>
                     <field name="name"/>
                     <field name="origin"/>
                     <field name="operation_id" domain="[('type','=','supplier')]"/>
@@ -84,6 +86,9 @@
                         </group>
                         <group name="product" string="Product" colspan="2">
                             <field name="product_id"/>
+                            <field name="lot_id"
+                                   groups="stock.group_production_lot"
+                                   attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
                             <newline/>
                             <field name="product_qty"/>
                             <field name="price_unit"/>
@@ -192,6 +197,9 @@
                         </group>
                         <group name="product" string="Product">
                             <field name="product_id"/>
+                            <field name="lot_id"
+                                   groups="stock.group_production_lot"
+                                   attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
                             <newline/>
                             <field name="product_qty"/>
                             <field name="uom_id" groups="product.group_uom"/>
@@ -268,6 +276,8 @@
                     <field name="partner_id"/>
                     <field name="requested_by"/>
                     <field name="assigned_to"/>
+                    <field name="product_id"/>
+                    <field name="lot_id"/>
                     <separator/>
                     <filter domain="[('assigned_to','=',uid)]" help="My RMAs"/>
                     <group expand="0" string="Group By">

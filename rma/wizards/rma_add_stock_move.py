@@ -42,18 +42,19 @@ class RmaAddStockMove(models.TransientModel):
                                 string='Stock Moves',
                                 domain="[('state', '=', 'done')]")
 
-    def _prepare_rma_line_from_stock_move(self, line):
-        operation = line.product_id.rma_operation_id or \
-            line.product_id.categ_id.rma_operation_id
+    def _prepare_rma_line_from_stock_move(self, sm, lot=False):
+        operation = sm.product_id.rma_operation_id or \
+            sm.product_id.categ_id.rma_operation_id
         data = {
-            'reference_move_id': line.id,
-            'product_id': line.product_id.id,
-            'name': line.product_id.name_template,
-            'origin': line.picking_id.name,
-            'uom_id': line.product_uom.id,
+            'reference_move_id': sm.id,
+            'product_id': sm.product_id.id,
+            'lot_id': lot and lot.id or False,
+            'name': sm.product_id.name_template,
+            'origin': sm.picking_id.name,
+            'uom_id': sm.product_uom.id,
             'operation_id': operation.id,
-            'product_qty': line.product_uom_qty,
-            'delivery_address_id': line.picking_id.partner_id.id,
+            'product_qty': sm.product_uom_qty,
+            'delivery_address_id': sm.picking_id.partner_id.id,
             'rma_id': self.rma_id.id
         }
         if not operation:
@@ -93,9 +94,16 @@ class RmaAddStockMove(models.TransientModel):
     def add_lines(self):
         rma_line_obj = self.env['rma.order.line']
         existing_invoice_lines = self._get_existing_stock_moves()
-        for line in self.move_ids:
-            if line not in existing_invoice_lines:
-                data = self._prepare_rma_line_from_stock_move(line)
-                rma_line_obj.with_context(
-                    default_rma_id=self.rma_id.id).create(data)
+        for sm in self.move_ids:
+            if sm not in existing_invoice_lines:
+                if sm.lot_ids:
+                    for lot in sm.lot_ids:
+                        data = self._prepare_rma_line_from_stock_move(sm,
+                                                                      lot=lot)
+                        rma_line_obj.with_context(
+                            default_rma_id=self.rma_id.id).create(data)
+                else:
+                    data = self._prepare_rma_line_from_stock_move(sm, lot=False)
+                    rma_line_obj.with_context(
+                        default_rma_id=self.rma_id.id).create(data)
         return {'type': 'ir.actions.act_window_close'}

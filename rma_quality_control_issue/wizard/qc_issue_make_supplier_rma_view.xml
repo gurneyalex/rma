@@ -29,6 +29,9 @@
                                   <field name="issue_id"
                                        options="{'no_open': true}"/>
                                   <field name="product_id"/>
+                                  <field name="lot_id"
+                                   groups="stock.group_production_lot"
+                                   attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
                                   <field name="name"/>
                                   <field name="product_qty"/>
                                   <field name="uom_id"

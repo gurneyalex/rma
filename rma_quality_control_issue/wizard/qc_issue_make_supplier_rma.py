@@ -28,6 +28,7 @@ class QcIssueMakeSupplierRma(models.TransientModel):
         return {
             'issue_id': issue.id,
             'product_id': issue.product_id.id,
+            'lot_id': issue.lot_id.id,
             'name': issue.name,
             'product_qty': issue.product_qty,
             'uom_id': issue.product_uom.id,
@@ -70,6 +71,7 @@ class QcIssueMakeSupplierRma(models.TransientModel):
             [('type', '=', 'supplier')], limit=1)
         data = {
             'rma_id': rma.id,
+            'lot_id': item.issue_id.lot_id,
             'origin': item.issue_id.name,
             'name': item.issue_id.name,
             'product_id': item.product_id.id,
@@ -147,6 +149,10 @@ class QcIssueMakeSupplierRmaItem(models.TransientModel):
                                required=True)
     product_id = fields.Many2one('product.product',
                                  related='issue_id.product_id', readony=True)
+    lot_id = fields.Many2one(
+        comodel_name="stock.production.lot", string="Lot/Serial Number",
+        readonly=True, related='issue_id.lot_id',
+    )
     name = fields.Char(related='issue_id.name', readonly=True)
     uom_id = fields.Many2one('product.uom', string='UoM', readonly=True)
     product_qty = fields.Float(string='Quantity to RMA',

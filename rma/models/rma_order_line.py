@@ -154,13 +154,8 @@ class RmaOrderLine(models.Model):
         help="This address will be used to "
         "deliver repaired or replacement products.")
 
-    procurement_count = fields.Integer(compute=_compute_procurement_count,
-                                       string='# of Procurements', copy=False,
-                                       default=0)
-    in_shipment_count = fields.Integer(compute=_compute_in_shipment_count,
-                                       string='# of Shipments', default=0)
-    out_shipment_count = fields.Integer(compute=_compute_out_shipment_count,
-                                        string='# of Deliveries', default=0)
+    rma_id = fields.Many2one('rma.order', string='RMA',
+                             ondelete='cascade', required=True)
     name = fields.Text(string='Description', required=True)
     origin = fields.Char(string='Source Document',
                          help="Reference of the document that produced "
@@ -176,15 +171,29 @@ class RmaOrderLine(models.Model):
     sequence = fields.Integer(default=10,
                               help="Gives the sequence of this line "
                               "when displaying the rma.")
-    rma_id = fields.Many2one('rma.order', string='RMA',
-                             ondelete='cascade')
-    uom_id = fields.Many2one('product.uom', string='Unit of Measure')
     product_id = fields.Many2one('product.product', string='Product',
-                                 ondelete='restrict')
+                                 ondelete='restrict', required=-True)
+    lot_id = fields.Many2one(
+        comodel_name="stock.production.lot", string="Lot/Serial Number",
+        readonly=True, states={"new": [("readonly", False)]},
+    )
+    product_qty = fields.Float(
+        string='Ordered Qty', copy=False,
+        digits=dp.get_precision('Product Unit of Measure'))
+    uom_id = fields.Many2one('product.uom', string='Unit of Measure',
+                             required=True)
     price_unit = fields.Monetary(string='Price Unit', readonly=False,
                                  states={'approved': [('readonly', True)],
                                          'done': [('readonly', True)],
                                          'to_approve': [('readonly', True)]})
+
+    procurement_count = fields.Integer(compute=_compute_procurement_count,
+                                       string='# of Procurements', copy=False,
+                                       default=0)
+    in_shipment_count = fields.Integer(compute=_compute_in_shipment_count,
+                                       string='# of Shipments', default=0)
+    out_shipment_count = fields.Integer(compute=_compute_out_shipment_count,
+                                        string='# of Deliveries', default=0)
     move_ids = fields.One2many('stock.move', 'rma_line_id',
                                string='Stock Moves', readonly=True
                                , copy=False)
@@ -239,9 +248,6 @@ class RmaOrderLine(models.Model):
         string='Supplier Address',
         help="This address of the supplier in case of Customer RMA operation "
              "dropship.")
-    product_qty = fields.Float(
-        string='Ordered Qty', copy=False,
-        digits=dp.get_precision('Product Unit of Measure'))
     qty_to_receive = fields.Float(
         string='Qty To Receive',
         digits=dp.get_precision('Product Unit of Measure'),
@@ -326,6 +332,23 @@ class RmaOrderLine(models.Model):
             self.receipt_policy = 'no'
         elif self.type == 'customer' and self.supplier_to_customer:
             self.delivery_policy = 'no'
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        self.uom_id = self.product_id.uom_id
+        if self.lot_id.product_id != self.product_id:
+            self.lot_id = False
+        if self.product_id:
+            return {'domain': {
+                'lot_id': [('product_id', '=', self.product_id.id)]}}
+        return {'domain': {'lot_id': []}}
+
+    @api.onchange("lot_id")
+    def _onchange_lot_id(self):
+        product = self.lot_id.product_id
+        if product:
+            self.product_id = product
+            self.uom_id = product.uom_id
 
     @api.multi
     def action_view_in_shipments(self):
