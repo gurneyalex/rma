@@ -69,6 +69,7 @@ class QcIssueMakeSupplierRma(models.TransientModel):
         operation = self.env['rma.operation'].search(
             [('type', '=', 'supplier')], limit=1)
         data = {
+            'rma_id': rma.id,
             'origin': item.issue_id.name,
             'name': item.issue_id.name,
             'product_id': item.product_id.id,
