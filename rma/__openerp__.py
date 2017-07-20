@@ -22,7 +22,7 @@
              ],
     'data': ['security/rma.xml',
              'security/ir.model.access.csv',
-             
+
              'data/rma_sequence.xml',
              'data/stock_data.xml',
              'data/rma_operation.xml',

@@ -103,14 +103,6 @@
         <field name="code">incoming</field>
     </record>
 
-    <record id="stock.stock_warehouse_shop0" model="stock.warehouse">
-        <field name="lot_rma_id" ref="location_rma_shop0"/>
-        <field name="rma_cust_out_type_id" ref="picking_type_rma_cust_out"/>
-        <field name="rma_cust_in_type_id" ref="picking_type_rma_cust_in"/>
-        <field name="rma_sup_out_type_id" ref="picking_type_rma_sup_out"/>
-        <field name="rma_sup_in_type_id" ref="picking_type_rma_sup_in"/>
-    </record>
-
     <record id="stock.warehouse0" model="stock.warehouse">
         <field name="lot_rma_id" ref="location_rma"/>
         <field name="rma_cust_out_type_id" ref="picking_type_rma_cust_out"/>
