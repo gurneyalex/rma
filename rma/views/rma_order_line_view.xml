@@ -200,6 +200,7 @@
                             <field name="rma_id"/>
                             <field name="name"/>
                         </h1>
+                        </div>
                         <group>
                             <group name="rma" string="Order">
                                 <field name="origin"/>
