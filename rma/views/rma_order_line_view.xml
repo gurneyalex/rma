@@ -107,8 +107,7 @@
                                     <group name="inbound" string="Inbound">
                                         <field name="in_warehouse_id"/>
                                         <field name="location_id"
-                                               domain="[('warehouse_id', '=', in_warehouse_id),
-                                                        ('usage', '=', 'internal')]"/>
+                                               domain="[('usage', '=', 'internal')]"/>
                                         <field name="in_route_id"/>
                                         <field name="supplier_to_customer"/>
                                     </group>
@@ -215,8 +214,7 @@
                                     <group name="inbound" string="Inbound">
                                         <field name="in_warehouse_id"/>
                                         <field name="location_id"
-                                               domain="[('warehouse_id', '=', in_warehouse_id),
-                                                        ('usage', '=', 'internal')]"/>
+                                               domain="[('usage', '=', 'internal')]"/>
                                         <field name="in_route_id"/>
                                         <field name="customer_to_supplier"/>
                                         <field name="supplier_address_id"
