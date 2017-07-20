@@ -131,7 +131,7 @@ class QcIssueMakeSupplierRmaItem(models.TransientModel):
     issue_id = fields.Many2one('qc.issue', string='RMA Line', required=True)
     product_id = fields.Many2one('product.product',
                                  related='line_id.product_id', readony=True)
-    name = fields.Text(related='issue_id.name', readonly=True)
+    name = fields.Char(related='issue_id.name', readonly=True)
     uom_id = fields.Many2one('product.uom', string='UoM', readonly=True)
     product_qty = fields.Float(string='Quantity to RMA',
                                digits=dp.get_precision('Product UoS'))
