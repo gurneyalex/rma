@@ -119,16 +119,19 @@ class QcIssueMakeSupplierRma(models.TransientModel):
             rma_line_obj.create(rma_line_data)
             res.append(rma.id)
 
-        return {
-            'domain': "[('id','in', [" + ','.join(map(str, res)) + "])]",
-            'name': _('Supplier RMA'),
-            'view_type': 'form',
-            'view_mode': 'tree,form',
-            'res_model': 'rma.order',
-            'view_id': False,
+        result = {
+            "type": "ir.actions.act_window",
+            "res_model": "rma.order",
+            "domain": [("id", "in", res)],
+            "name": _('Supplier RMA'),
             'context': {'supplier': 1},
-            'type': 'ir.actions.act_window'
         }
+        if len(res) == 1:
+            result['views'] = [(False, "form")]
+            result['res_id'] = res[0]
+        else:
+            result['views'] = [(False, "tree"), (False, "form")]
+        return result
 
 
 class QcIssueMakeSupplierRmaItem(models.TransientModel):
