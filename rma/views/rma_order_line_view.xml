@@ -5,7 +5,7 @@
             <field name="name">rma.order.line.tree</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <tree string="RMA Line"
+                <tree string="RMA Line" nocreate="1"
                       decoration-muted="state in ('draft','to_approve')">
                     <field name="rma_id"/>
                     <field name="state" invisible="1"/>
@@ -27,7 +27,7 @@
             <field name="name">rma.order.line.supplier.tree</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <tree string="RMA Line"
+                <tree string="RMA Line" nocreate="1"
                       decoration-muted="state in ('draft','to_approve')">
                     <field name="rma_id"/>
                     <field name="state" invisible="1"/>
@@ -48,7 +48,7 @@
             <field name="name">rma.order.line.supplier.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="RMA Line">
+                <form string="RMA Line" nocreate="1">
                     <sheet>
                         <header/>
                         <div name="button_box" class="oe_button_box">
@@ -76,40 +76,31 @@
                         </div>
                         <div class="oe_title" name="title">
                         <h1>
-                            <field name="rma_id"/>
-                            <field name="name"/>
+                            <field name="rma_id" required="False"
+                                   readonly="True"
+                                   invisible="context.get('hide_title',False)"/>
                         </h1>
                         </div>
                         <group>
-                            <group name="rma" string="Order">
-                                <field name="origin"/>
-                                <field name="reference_move_id"/>
-                                <field name="state" invisible="1"/>
-                            </group>
-                            <group name="contact" string="Contact">
-                                <field name="requested_by" readonly="1"/>
-                                <field name="assigned_to" readonly="1"/>
-                            </group>
-                            <group name="product" string="Product" colspan="2">
+                            <group name="product" string="Product">
                                 <field name="product_id"/>
+                                <newline/>
                                 <field name="product_tracking" invisible="1"/>
                                 <field name="lot_id"
                                        groups="stock.group_production_lot"
                                        attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
-                                <newline/>
+                            </group>
+                            <group name="product_qty" string="Quantity">
                                 <field name="product_qty"/>
                                 <field name="price_unit"/>
                                 <field name="uom_id" groups="product.group_uom"/>
                             </group>
+                            <newline/>
                             <group name="operation" string="Operation" colspan="2">
                                 <field name="operation_id"
                                        domain="[('type','=','supplier')]"/>
                                 <field name="receipt_policy"/>
                                 <field name="delivery_policy"/>
-                            </group>
-                            <group name="company" string="Company"
-                                   groups="base.group_multi_company">
-                                <field name="company_id"/>
                             </group>
                         </group>
                         <notebook>
@@ -154,6 +145,22 @@
                                     </group>
                                 </group>
                             </page>
+                            <page name="other" string="Other Info">
+                                <group name="general" string="General">
+                                    <field name="name"/>
+                                    <field name="origin"/>
+                                    <field name="reference_move_id"/>
+                                    <field name="state" invisible="1"/>
+                                </group>
+                                <group name="contact" string="Contact">
+                                    <field name="requested_by" readonly="1"/>
+                                    <field name="assigned_to" readonly="1"/>
+                                </group>
+                                <group name="company" string="Company"
+                                   groups="base.group_multi_company">
+                                <field name="company_id"/>
+                            </group>
+                            </page>
                         </notebook>
                     </sheet>
                 </form>
@@ -164,7 +171,7 @@
             <field name="name">rma.order.line.form</field>
             <field name="model">rma.order.line</field>
             <field name="arch" type="xml">
-                <form string="Rma Line">
+                <form string="Rma Line" nocreate="1">
                     <sheet>
                         <header/>
                         <div name="button_box" class="oe_button_box">
@@ -197,40 +204,30 @@
                         </div>
                         <div class="oe_title" name="title">
                         <h1>
-                            <field name="rma_id"/>
-                            <field name="name"/>
+                            <field name="rma_id" required="False"
+                                   readonly="True"
+                                   invisible="context.get('hide_title',False)"/>
                         </h1>
                         </div>
                         <group>
-                            <group name="rma" string="Order">
-                                <field name="origin"/>
-                                <field name="reference_move_id"/>
-                                <field name="state" invisible="1"/>
-                                <field name="name" invisible="1"/>
-                            </group>
-                            <group name="contact" string="Contact">
-                                <field name="requested_by" readonly="1"/>
-                                <field name="assigned_to" readonly="1"/>
-                            </group>
                             <group name="product" string="Product">
                                 <field name="product_id"/>
+                                <newline/>
                                 <field name="product_tracking" invisible="1"/>
                                 <field name="lot_id"
                                        groups="stock.group_production_lot"
                                        attrs="{'required': [('product_tracking', 'in', ('serial', 'lot'))]}"/>
-                                <newline/>
+                            </group>
+                            <group name="product_qty" string="Quantity">
                                 <field name="product_qty"/>
                                 <field name="uom_id" groups="product.group_uom"/>
                                 <field name="price_unit"/>
                             </group>
+                            <newline/>
                             <group name="operation" string="Operation">
                                 <field name="operation_id" domain="[('type','=','customer')]"/>
                                 <field name="receipt_policy"/>
                                 <field name="delivery_policy"/>
-                            </group>
-                             <group name="company" string="Company"
-                                    groups="base.group_multi_company">
-                                <field name="company_id"/>
                             </group>
                         </group>
                         <notebook>
@@ -279,6 +276,22 @@
                                         </group>
                                     </group>
                                 </group>
+                            </page>
+                            <page name="other" string="Other Info">
+                                <group name="general" string="General">
+                                    <field name="name"/>
+                                    <field name="origin"/>
+                                    <field name="reference_move_id"/>
+                                    <field name="state" invisible="1"/>
+                                </group>
+                                <group name="contact" string="Contact">
+                                    <field name="requested_by" readonly="1"/>
+                                    <field name="assigned_to" readonly="1"/>
+                                </group>
+                                <group name="company" string="Company"
+                                    groups="base.group_multi_company">
+                                <field name="company_id"/>
+                            </group>
                             </page>
                         </notebook>
                     </sheet>

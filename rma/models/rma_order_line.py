@@ -156,7 +156,9 @@ class RmaOrderLine(models.Model):
 
     rma_id = fields.Many2one('rma.order', string='RMA',
                              ondelete='cascade', required=True)
-    name = fields.Char(required=True, default='/')
+    name = fields.Char(string='Reference', required=True, default='/',
+                       help='Add here the supplier RMA #. Otherwise an '
+                            'internal code is assigned.')
     description = fields.Text(string='Description')
     origin = fields.Char(string='Source Document',
                          help="Reference of the document that produced "

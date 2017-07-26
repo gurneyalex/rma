@@ -68,13 +68,12 @@
         <field name="model">rma.order</field>
         <field name="inherit_id" ref="rma.view_rma_form"/>
         <field name="arch" type="xml">
-            <group name="wizard" position="inside">
+            <button name="action_rma_done" position="after">
                 <button name="%(action_rma_add_sale)d"
-                        string="Add From Sale Order" class="oe_highlight"
+                        string="Add From Sale Order"
                         type="action"
-                        states="draft,to_approve"
-                        style='width:200px ;height:30px;'/>
-            </group>
+                        states="draft,to_approve"/>
+            </button>
         </field>
     </record>
 
