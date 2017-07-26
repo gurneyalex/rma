@@ -93,9 +93,9 @@ class RmaAddStockMove(models.TransientModel):
     @api.multi
     def add_lines(self):
         rma_line_obj = self.env['rma.order.line']
-        existing_invoice_lines = self._get_existing_stock_moves()
+        existing_stock_moves = self._get_existing_stock_moves()
         for sm in self.move_ids:
-            if sm not in existing_invoice_lines:
+            if sm not in existing_stock_moves:
                 if sm.lot_ids:
                     for lot in sm.lot_ids:
                         data = self._prepare_rma_line_from_stock_move(sm,

@@ -1,15 +1,13 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
     :alt: License LGPL-3
 
-RMA Purchase
+RMA Warranty
 ===========
 
-Purchase as RMA source
+Use product warranty on RMA
 
 Usage
 =====
-
-select add_purchase_id to fill rma from RMA purchase
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
