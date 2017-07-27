@@ -104,6 +104,9 @@ class QcIssueMakeSupplierRma(models.TransientModel):
         rma_obj = self.env['rma.order']
         rma_line_obj = self.env['rma.order.line']
         rma = False
+        action = self.env.ref(
+            'rma.action_rma_supplier')
+        action = action.read()[0]
 
         for item in self.item_ids:
             issue = item.issue_id
@@ -121,19 +124,14 @@ class QcIssueMakeSupplierRma(models.TransientModel):
             rma_line_obj.create(rma_line_data)
             res.append(rma.id)
 
-        result = {
-            "type": "ir.actions.act_window",
-            "res_model": "rma.order",
-            "domain": [("id", "in", res)],
-            "name": _('Supplier RMA'),
-            'context': {'supplier': 1},
-        }
-        if len(res) == 1:
-            result['views'] = [(False, "form")]
-            result['res_id'] = res[0]
-        else:
-            result['views'] = [(False, "tree"), (False, "form")]
-        return result
+        if len(res) != 1:
+            action['domain'] = [('id', 'in', res)]
+        elif len(res) == 1:
+            res = self.env.ref('rma.view_rma_supplier_form',
+                               False)
+            action['views'] = [(res and res.id or False, 'form')]
+            action['res_id'] = res[0]
+        return action
 
 
 class QcIssueMakeSupplierRmaItem(models.TransientModel):

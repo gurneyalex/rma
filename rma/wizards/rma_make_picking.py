@@ -195,7 +195,7 @@ class RmaMakePicking(models.TransientModel):
                 groups.append(proc.group_id.id)
         if len(groups):
             pickings =self.env['stock.picking'].search(
-                [('group_id','in', groups)])
+                [('group_id', 'in', groups)])
 
         action = self._get_action(pickings, procurements)
         return action
