@@ -75,6 +75,7 @@ class QcIssueMakeSupplierRma(models.TransientModel):
             'origin': item.issue_id.name,
             'product_id': item.product_id.id,
             'product_qty': item.product_qty,
+            'uom_id': item.uom_id.id,
             'qc_issue_id': item.issue_id.id,
             'operation_id': operation.id,
             'receipt_policy': operation.receipt_policy,
