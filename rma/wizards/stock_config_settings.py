@@ -8,7 +8,7 @@
 from openerp import models, fields
 
 
-class StockConfigSettings(models.Model):
+class StockConfigSettings(models.TransientModel):
     _inherit = 'stock.config.settings'
 
     group_rma_delivery_address = fields.Selection([
